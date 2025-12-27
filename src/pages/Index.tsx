@@ -2,32 +2,15 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import {
-  MessageCircle,
-  Calendar,
-  Users,
-  Moon,
-  Trophy,
-  Sparkles,
-  ArrowRight,
-} from "lucide-react";
+import { MessageCircle, Calendar, Users, Moon, Trophy, Sparkles, ArrowRight } from "lucide-react";
 import { mockMembers, mockEvents, mockMessages } from "@/data/mockData";
 import { differenceInDays, isFuture } from "date-fns";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-
 const Index = () => {
-  const nextSleepover = mockEvents
-    .filter((e) => e.type === "sleepover" && isFuture(e.date))
-    .sort((a, b) => a.date.getTime() - b.date.getTime())[0];
-
-  const daysUntil = nextSleepover
-    ? differenceInDays(nextSleepover.date, new Date())
-    : null;
-
-  const onlineMembers = mockMembers.filter((m) => m.status === "online");
-
-  return (
-    <AppLayout>
+  const nextSleepover = mockEvents.filter(e => e.type === "sleepover" && isFuture(e.date)).sort((a, b) => a.date.getTime() - b.date.getTime())[0];
+  const daysUntil = nextSleepover ? differenceInDays(nextSleepover.date, new Date()) : null;
+  const onlineMembers = mockMembers.filter(m => m.status === "online");
+  return <AppLayout>
       <div className="flex h-screen flex-col overflow-auto">
         {/* Hero Section */}
         <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-secondary/5 to-background px-8 py-12">
@@ -38,7 +21,7 @@ const Index = () => {
           
           <div className="relative mx-auto max-w-5xl">
             <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-glow-primary">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl shadow-glow-primary bg-sky-700 text-red-200">
                 <span className="text-3xl font-bold text-primary-foreground">D</span>
               </div>
               <div>
@@ -54,8 +37,7 @@ const Index = () => {
             {/* Quick Stats */}
             <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {/* Sleepover Countdown */}
-              {nextSleepover && daysUntil !== null && (
-                <Card className="border-primary/20 bg-primary/5 shadow-sm">
+              {nextSleepover && daysUntil !== null && <Card className="border-primary/20 bg-primary/5 shadow-sm">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary shadow-sm">
@@ -69,8 +51,7 @@ const Index = () => {
                       </div>
                     </div>
                   </CardContent>
-                </Card>
-              )}
+                </Card>}
 
               {/* Online Members */}
               <Card className="border-[hsl(var(--tertiary))]/20 bg-[hsl(var(--tertiary))]/5 shadow-sm">
@@ -244,11 +225,7 @@ const Index = () => {
             <div className="mt-8">
               <h2 className="mb-4 text-xl font-semibold text-foreground">Who's Online</h2>
               <div className="flex flex-wrap gap-3">
-                {onlineMembers.map((member) => (
-                  <div
-                    key={member.id}
-                    className="flex items-center gap-2 rounded-full bg-card border border-border px-4 py-2 shadow-sm"
-                  >
+                {onlineMembers.map(member => <div key={member.id} className="flex items-center gap-2 rounded-full bg-card border border-border px-4 py-2 shadow-sm">
                     <Avatar className="h-6 w-6">
                       <AvatarFallback className={`text-xs font-semibold ${member.color}`}>
                         {member.initials}
@@ -258,15 +235,12 @@ const Index = () => {
                       {member.name}
                     </span>
                     <span className="h-2 w-2 rounded-full bg-[hsl(var(--success))]" />
-                  </div>
-                ))}
+                  </div>)}
               </div>
             </div>
           </div>
         </div>
       </div>
-    </AppLayout>
-  );
+    </AppLayout>;
 };
-
 export default Index;
