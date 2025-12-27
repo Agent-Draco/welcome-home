@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 
 interface ChatMessageProps {
@@ -7,9 +7,11 @@ interface ChatMessageProps {
     id: string;
     content: string;
     sender: {
+      id: string;
       name: string;
       initials: string;
       color: string;
+      avatar_url?: string;
     };
     timestamp: Date;
     isOwn?: boolean;
@@ -27,6 +29,9 @@ export function ChatMessage({ message }: ChatMessageProps) {
       )}
     >
       <Avatar className="h-9 w-9 shrink-0 shadow-sm">
+        {message.sender.avatar_url && (
+          <AvatarImage src={message.sender.avatar_url} alt={message.sender.name} />
+        )}
         <AvatarFallback className={cn("text-sm font-semibold", message.sender.color)}>
           {message.sender.initials}
         </AvatarFallback>
