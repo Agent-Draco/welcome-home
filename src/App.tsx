@@ -18,6 +18,7 @@ import ProcessesPage from "./pages/ProcessesPage";
 import TraditionsPage from "./pages/TraditionsPage";
 import VoicePage from "./pages/VoicePage";
 import MessagesPage from "./pages/MessagesPage";
+import SettingsPage from "./pages/SettingsPage";
 import { AppLayout } from "./components/layout/AppLayout";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,8 @@ const App = () => (
             <Route path="/traditions" element={<WithLayout><TraditionsPage /></WithLayout>} />
             <Route path="/voice" element={<WithLayout><VoicePage /></WithLayout>} />
             <Route path="/messages" element={<WithLayout><MessagesPage /></WithLayout>} />
+            <Route path="/messages/:recipientId" element={<WithLayout><MessagesPage /></WithLayout>} />
+            <Route path="/settings" element={<WithLayout><SettingsPage /></WithLayout>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
