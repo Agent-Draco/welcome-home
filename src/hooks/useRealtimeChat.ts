@@ -94,13 +94,24 @@ export function useRealtimeChat() {
     };
   }, [user]);
 
-  const sendMessage = async (content: string) => {
-    if (!user || !content.trim()) return { error: new Error('Invalid message') };
+  const sendMessage = async (content: string, attachments?: { url: string; type: 'image' | 'file'; name: string }[]) => {
+    if (!user || (!content.trim() && (!attachments || attachments.length === 0))) {
+      return { error: new Error('Invalid message') };
+    }
+
+    // Build message content with attachments
+    let messageContent = content.trim();
+    if (attachments && attachments.length > 0) {
+      const attachmentText = attachments.map(a => 
+        a.type === 'image' ? `[image:${a.url}]` : `[file:${a.name}:${a.url}]`
+      ).join(' ');
+      messageContent = messageContent ? `${messageContent} ${attachmentText}` : attachmentText;
+    }
 
     const { error } = await supabase
       .from('messages')
       .insert({
-        content: content.trim(),
+        content: messageContent,
         sender_id: user.id
       });
 

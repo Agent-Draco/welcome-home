@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
+import { File, Download } from "lucide-react";
 
 interface ChatMessageProps {
   message: {
@@ -18,8 +19,34 @@ interface ChatMessageProps {
   };
 }
 
+// Parse message content for attachments
+function parseContent(content: string) {
+  const imageRegex = /\[image:(https?:\/\/[^\]]+)\]/g;
+  const fileRegex = /\[file:([^:]+):(https?:\/\/[^\]]+)\]/g;
+  
+  const images: string[] = [];
+  const files: { name: string; url: string }[] = [];
+  
+  let match;
+  while ((match = imageRegex.exec(content)) !== null) {
+    images.push(match[1]);
+  }
+  while ((match = fileRegex.exec(content)) !== null) {
+    files.push({ name: match[1], url: match[2] });
+  }
+  
+  // Remove attachment tags from text
+  const text = content
+    .replace(imageRegex, '')
+    .replace(fileRegex, '')
+    .trim();
+  
+  return { text, images, files };
+}
+
 export function ChatMessage({ message }: ChatMessageProps) {
   const isOwn = message.isOwn;
+  const { text, images, files } = parseContent(message.content);
 
   return (
     <div
@@ -46,16 +73,65 @@ export function ChatMessage({ message }: ChatMessageProps) {
             {format(message.timestamp, "h:mm a")}
           </span>
         </div>
-        <div
-          className={cn(
-            "rounded-2xl px-4 py-2.5 shadow-sm",
-            isOwn
-              ? "bg-primary text-primary-foreground rounded-tr-sm"
-              : "bg-card text-card-foreground border border-border rounded-tl-sm"
-          )}
-        >
-          <p className="text-sm leading-relaxed">{message.content}</p>
-        </div>
+        
+        {/* Images */}
+        {images.length > 0 && (
+          <div className={cn("flex flex-wrap gap-2", isOwn && "justify-end")}>
+            {images.map((url, index) => (
+              <a 
+                key={index} 
+                href={url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="block overflow-hidden rounded-lg border border-border"
+              >
+                <img 
+                  src={url} 
+                  alt="Attachment" 
+                  className="max-h-48 max-w-full object-cover hover:opacity-90 transition-opacity"
+                />
+              </a>
+            ))}
+          </div>
+        )}
+        
+        {/* Files */}
+        {files.length > 0 && (
+          <div className={cn("flex flex-col gap-1", isOwn && "items-end")}>
+            {files.map((file, index) => (
+              <a
+                key={index}
+                href={file.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                  isOwn
+                    ? "bg-primary/80 text-primary-foreground hover:bg-primary"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                )}
+              >
+                <File className="h-4 w-4" />
+                <span className="max-w-[150px] truncate">{file.name}</span>
+                <Download className="h-3 w-3 opacity-60" />
+              </a>
+            ))}
+          </div>
+        )}
+        
+        {/* Text content */}
+        {text && (
+          <div
+            className={cn(
+              "rounded-2xl px-4 py-2.5 shadow-sm",
+              isOwn
+                ? "bg-primary text-primary-foreground rounded-tr-sm"
+                : "bg-card text-card-foreground border border-border rounded-tl-sm"
+            )}
+          >
+            <p className="text-sm leading-relaxed">{text}</p>
+          </div>
+        )}
       </div>
     </div>
   );
