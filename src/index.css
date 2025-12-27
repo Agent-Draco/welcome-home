@@ -199,6 +199,39 @@
     box-shadow: var(--glow-secondary);
   }
   
+  /* Glassmorphism utilities */
+  .glass {
+    @apply bg-white/60 dark:bg-white/10 backdrop-blur-xl border border-white/40 dark:border-white/20;
+  }
+  
+  .glass-subtle {
+    @apply bg-white/40 dark:bg-white/5 backdrop-blur-lg border border-white/30 dark:border-white/10;
+  }
+  
+  .glass-card {
+    @apply bg-gradient-to-br from-white/70 to-white/40 dark:from-white/15 dark:to-white/5 backdrop-blur-xl border border-white/50 dark:border-white/20 shadow-lg;
+  }
+  
+  .glass-bg {
+    background: linear-gradient(135deg, 
+      hsl(174 72% 80% / 0.4) 0%, 
+      hsl(174 72% 90% / 0.6) 25%,
+      hsl(180 60% 85% / 0.5) 50%,
+      hsl(200 70% 90% / 0.4) 75%,
+      hsl(174 72% 85% / 0.5) 100%
+    );
+  }
+  
+  .dark .glass-bg {
+    background: linear-gradient(135deg, 
+      hsl(174 72% 20% / 0.4) 0%, 
+      hsl(174 72% 15% / 0.6) 25%,
+      hsl(180 60% 12% / 0.5) 50%,
+      hsl(200 70% 10% / 0.4) 75%,
+      hsl(174 72% 15% / 0.5) 100%
+    );
+  }
+  
   /* Animation utilities */
   .animate-float {
     animation: float 3s ease-in-out infinite;

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trophy, Plus, ChevronDown, ChevronRight, Loader2, Folder, FolderOpen } from "lucide-react";
+import { Trophy, Plus, ChevronDown, ChevronRight, Loader2, Folder, FolderOpen, Sparkles } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -117,191 +116,221 @@ export default function HallOfFamePage() {
 
   if (loading || adminLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex h-screen items-center justify-center glass-bg">
+        <div className="glass-card rounded-3xl p-8">
+          <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--tertiary))]" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen flex-col">
-      <PageHeader
-        title="Hall of Fame"
-        subtitle="Celebrating legendary moments"
-        icon={<Trophy className="h-6 w-6" />}
-        action={
-          isAdmin ? (
-            <div className="flex gap-2">
-              <Dialog open={isAddAchievementOpen} onOpenChange={setIsAddAchievementOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="rounded-full">
-                    <Plus className="mr-2 h-4 w-4" />
-                    New Achievement
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Create Achievement</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label>Icon</Label>
-                      <Input
-                        value={newAchievementIcon}
-                        onChange={(e) => setNewAchievementIcon(e.target.value)}
-                        placeholder="🏆"
-                        className="w-20 text-center text-2xl"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Name</Label>
-                      <Input
-                        value={newAchievementName}
-                        onChange={(e) => setNewAchievementName(e.target.value)}
-                        placeholder="Best Pillow Fort Builder"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Description</Label>
-                      <Textarea
-                        value={newAchievementDesc}
-                        onChange={(e) => setNewAchievementDesc(e.target.value)}
-                        placeholder="For the most creative pillow fort construction"
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button onClick={handleAddAchievement}>Create</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-
-              <Dialog open={isAddEntryOpen} onOpenChange={setIsAddEntryOpen}>
-                <DialogTrigger asChild>
-                  <Button className="rounded-full bg-[hsl(var(--warning))] text-[hsl(var(--warning-foreground))] hover:bg-[hsl(var(--warning))]/90 shadow-glow-secondary">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Entry
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add Hall of Fame Entry</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label>Sleepover</Label>
-                      <Select value={selectedSleepover} onValueChange={setSelectedSleepover}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select sleepover" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {sleepovers.map((s) => (
-                            <SelectItem key={s.id} value={s.id}>
-                              {s.title} ({new Date(s.event_date).toLocaleDateString()})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Achievement</Label>
-                      <Select value={selectedAchievement} onValueChange={setSelectedAchievement}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select achievement" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {achievements.map((a) => (
-                            <SelectItem key={a.id} value={a.id}>
-                              {a.icon} {a.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Winner</Label>
-                      <Select value={selectedWinner} onValueChange={setSelectedWinner}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select winner" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {profiles.map((p) => (
-                            <SelectItem key={p.id} value={p.id}>
-                              {p.display_name || p.username}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Description (optional)</Label>
-                      <Textarea
-                        value={entryDescription}
-                        onChange={(e) => setEntryDescription(e.target.value)}
-                        placeholder="What made this legendary?"
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button onClick={handleAddEntry}>Add Entry</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+    <div className="flex h-screen flex-col glass-bg relative overflow-hidden">
+      {/* Decorative blurred shapes */}
+      <div className="absolute top-20 left-20 w-96 h-96 bg-[hsl(var(--tertiary))] opacity-20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-20 right-20 w-80 h-80 bg-[hsl(var(--primary))] opacity-10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white opacity-20 rounded-full blur-3xl pointer-events-none" />
+      
+      <div className="relative z-10 p-6">
+        <div className="glass-card rounded-3xl px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[hsl(var(--warning))] to-[hsl(var(--warning))]/80 text-[hsl(var(--warning-foreground))] shadow-lg">
+                <Trophy className="h-6 w-6" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-foreground">Hall of Fame</h1>
+                <p className="text-sm text-muted-foreground">Celebrating legendary moments</p>
+              </div>
             </div>
-          ) : null
-        }
-      />
+            {isAdmin && (
+              <div className="flex gap-3">
+                <Dialog open={isAddAchievementOpen} onOpenChange={setIsAddAchievementOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="glass rounded-full border-white/40 hover:bg-white/30">
+                      <Plus className="mr-2 h-4 w-4" />
+                      New Achievement
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="glass-card border-white/40">
+                    <DialogHeader>
+                      <DialogTitle>Create Achievement</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label>Icon</Label>
+                        <Input
+                          value={newAchievementIcon}
+                          onChange={(e) => setNewAchievementIcon(e.target.value)}
+                          placeholder="🏆"
+                          className="w-20 text-center text-2xl glass border-white/40"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Name</Label>
+                        <Input
+                          value={newAchievementName}
+                          onChange={(e) => setNewAchievementName(e.target.value)}
+                          placeholder="Best Pillow Fort Builder"
+                          className="glass border-white/40"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Description</Label>
+                        <Textarea
+                          value={newAchievementDesc}
+                          onChange={(e) => setNewAchievementDesc(e.target.value)}
+                          placeholder="For the most creative pillow fort construction"
+                          className="glass border-white/40"
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button onClick={handleAddAchievement} className="rounded-full">Create</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
 
-      <ScrollArea className="flex-1 p-6">
-        <div className="mx-auto max-w-3xl space-y-4">
+                <Dialog open={isAddEntryOpen} onOpenChange={setIsAddEntryOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="rounded-full bg-gradient-to-r from-[hsl(var(--warning))] to-[hsl(var(--warning))]/80 text-[hsl(var(--warning-foreground))] hover:opacity-90 shadow-lg">
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Add Entry
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="glass-card border-white/40">
+                    <DialogHeader>
+                      <DialogTitle>Add Hall of Fame Entry</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label>Sleepover</Label>
+                        <Select value={selectedSleepover} onValueChange={setSelectedSleepover}>
+                          <SelectTrigger className="glass border-white/40">
+                            <SelectValue placeholder="Select sleepover" />
+                          </SelectTrigger>
+                          <SelectContent className="glass-card border-white/40">
+                            {sleepovers.map((s) => (
+                              <SelectItem key={s.id} value={s.id}>
+                                {s.title} ({new Date(s.event_date).toLocaleDateString()})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Achievement</Label>
+                        <Select value={selectedAchievement} onValueChange={setSelectedAchievement}>
+                          <SelectTrigger className="glass border-white/40">
+                            <SelectValue placeholder="Select achievement" />
+                          </SelectTrigger>
+                          <SelectContent className="glass-card border-white/40">
+                            {achievements.map((a) => (
+                              <SelectItem key={a.id} value={a.id}>
+                                {a.icon} {a.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Winner</Label>
+                        <Select value={selectedWinner} onValueChange={setSelectedWinner}>
+                          <SelectTrigger className="glass border-white/40">
+                            <SelectValue placeholder="Select winner" />
+                          </SelectTrigger>
+                          <SelectContent className="glass-card border-white/40">
+                            {profiles.map((p) => (
+                              <SelectItem key={p.id} value={p.id}>
+                                {p.display_name || p.username}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Description (optional)</Label>
+                        <Textarea
+                          value={entryDescription}
+                          onChange={(e) => setEntryDescription(e.target.value)}
+                          placeholder="What made this legendary?"
+                          className="glass border-white/40"
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button onClick={handleAddEntry} className="rounded-full">Add Entry</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <ScrollArea className="flex-1 px-6 pb-6 relative z-10">
+        <div className="mx-auto max-w-4xl space-y-4">
           {entries.length === 0 && sleepovers.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <Trophy className="h-16 w-16 text-muted-foreground/30" />
-              <h3 className="mt-4 text-lg font-semibold text-foreground">
-                No fame entries yet
-              </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Create a sleepover first, then start celebrating legendary moments!
-              </p>
+            <div className="glass-card rounded-3xl p-16 text-center">
+              <div className="flex flex-col items-center">
+                <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-[hsl(var(--tertiary))]/20 mb-6">
+                  <Trophy className="h-10 w-10 text-[hsl(var(--tertiary))]" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground">
+                  No fame entries yet
+                </h3>
+                <p className="mt-2 text-muted-foreground max-w-sm">
+                  Create a sleepover first, then start celebrating legendary moments!
+                </p>
+              </div>
             </div>
           ) : entries.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <Trophy className="h-16 w-16 text-muted-foreground/30" />
-              <h3 className="mt-4 text-lg font-semibold text-foreground">
-                No fame entries yet
-              </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {isAdmin 
-                  ? "Start celebrating legendary moments! Create achievements first, then add entries."
-                  : "No legendary moments have been recorded yet."}
-              </p>
+            <div className="glass-card rounded-3xl p-16 text-center">
+              <div className="flex flex-col items-center">
+                <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-[hsl(var(--tertiary))]/20 mb-6">
+                  <Trophy className="h-10 w-10 text-[hsl(var(--tertiary))]" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground">
+                  No fame entries yet
+                </h3>
+                <p className="mt-2 text-muted-foreground max-w-sm">
+                  {isAdmin 
+                    ? "Start celebrating legendary moments! Create achievements first, then add entries."
+                    : "No legendary moments have been recorded yet."}
+                </p>
+              </div>
             </div>
           ) : (
             years.map((year) => (
               <Collapsible key={year} open={expandedYears.has(year)} onOpenChange={() => toggleYear(year)}>
                 <CollapsibleTrigger asChild>
-                  <Card className="cursor-pointer hover:bg-muted/50 transition-colors">
-                    <CardHeader className="py-4">
+                  <div className="glass-card rounded-2xl cursor-pointer hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-300 group">
+                    <div className="p-5">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          {expandedYears.has(year) ? (
-                            <FolderOpen className="h-5 w-5 text-[hsl(var(--warning))]" />
-                          ) : (
-                            <Folder className="h-5 w-5 text-[hsl(var(--warning))]" />
-                          )}
-                          <CardTitle className="text-lg">{year}</CardTitle>
-                          <Badge variant="secondary">
+                        <div className="flex items-center gap-4">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[hsl(var(--warning))]/20">
+                            {expandedYears.has(year) ? (
+                              <FolderOpen className="h-5 w-5 text-[hsl(var(--warning))]" />
+                            ) : (
+                              <Folder className="h-5 w-5 text-[hsl(var(--warning))]" />
+                            )}
+                          </div>
+                          <span className="text-lg font-bold text-foreground">{year}</span>
+                          <Badge className="glass-subtle text-foreground border-0">
                             {Object.keys(entriesByYear[year]).length} sleepovers
                           </Badge>
                         </div>
-                        {expandedYears.has(year) ? (
-                          <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                        ) : (
-                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                        )}
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/30 dark:bg-white/10 group-hover:bg-white/50 dark:group-hover:bg-white/20 transition-colors">
+                          {expandedYears.has(year) ? (
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </div>
                       </div>
-                    </CardHeader>
-                  </Card>
+                    </div>
+                  </div>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pl-6 space-y-3 mt-3">
                   {Object.entries(entriesByYear[year]).map(([sleepoverId, { sleepover, entries: sleepoverEntries }]) => (
@@ -311,57 +340,59 @@ export default function HallOfFamePage() {
                       onOpenChange={() => toggleSleepover(sleepoverId)}
                     >
                       <CollapsibleTrigger asChild>
-                        <Card className="cursor-pointer hover:bg-muted/50 transition-colors">
-                          <CardContent className="py-3 px-4">
+                        <div className="glass-subtle rounded-xl cursor-pointer hover:bg-white/40 dark:hover:bg-white/10 transition-all duration-300 group">
+                          <div className="p-4">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
-                                {expandedSleepovers.has(sleepoverId) ? (
-                                  <FolderOpen className="h-4 w-4 text-primary" />
-                                ) : (
-                                  <Folder className="h-4 w-4 text-primary" />
-                                )}
-                                <span className="font-medium">{sleepover?.title || 'Unknown Sleepover'}</span>
-                                <Badge variant="outline" className="text-xs">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[hsl(var(--primary))]/20">
+                                  {expandedSleepovers.has(sleepoverId) ? (
+                                    <FolderOpen className="h-4 w-4 text-primary" />
+                                  ) : (
+                                    <Folder className="h-4 w-4 text-primary" />
+                                  )}
+                                </div>
+                                <span className="font-semibold text-foreground">{sleepover?.title || 'Unknown Sleepover'}</span>
+                                <Badge variant="outline" className="text-xs border-white/40 bg-white/20">
                                   {sleepoverEntries.length} entries
                                 </Badge>
                               </div>
-                              {expandedSleepovers.has(sleepoverId) ? (
-                                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                              ) : (
-                                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                              )}
+                              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white/30 dark:bg-white/10">
+                                {expandedSleepovers.has(sleepoverId) ? (
+                                  <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                                ) : (
+                                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                                )}
+                              </div>
                             </div>
-                          </CardContent>
-                        </Card>
+                          </div>
+                        </div>
                       </CollapsibleTrigger>
                       <CollapsibleContent className="pl-6 space-y-2 mt-2">
                         {sleepoverEntries.map((entry) => (
-                          <Card key={entry.id} className="border-[hsl(var(--warning))]/20 bg-[hsl(var(--warning))]/5">
-                            <CardContent className="py-3 px-4">
-                              <div className="flex items-center gap-4">
-                                <span className="text-2xl">{entry.achievements?.icon || '🏆'}</span>
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-semibold">{entry.achievements?.name || 'Achievement'}</span>
-                                  </div>
-                                  {entry.description && (
-                                    <p className="text-sm text-muted-foreground mt-1">{entry.description}</p>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Avatar className="h-8 w-8">
-                                    {entry.winner?.avatar_url ? (
-                                      <AvatarImage src={entry.winner.avatar_url} />
-                                    ) : null}
-                                    <AvatarFallback className="bg-[hsl(var(--warning))] text-[hsl(var(--warning-foreground))] text-xs">
-                                      {getInitials(entry.winner?.display_name)}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <span className="text-sm font-medium">{entry.winner?.display_name || 'Unknown'}</span>
-                                </div>
+                          <div key={entry.id} className="glass rounded-xl p-4 border-[hsl(var(--warning))]/30 bg-gradient-to-r from-[hsl(var(--warning))]/10 to-transparent">
+                            <div className="flex items-center gap-4">
+                              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[hsl(var(--warning))]/20 text-2xl">
+                                {entry.achievements?.icon || '🏆'}
                               </div>
-                            </CardContent>
-                          </Card>
+                              <div className="flex-1 min-w-0">
+                                <span className="font-bold text-foreground">{entry.achievements?.name || 'Achievement'}</span>
+                                {entry.description && (
+                                  <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">{entry.description}</p>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-3 glass-subtle rounded-full py-1.5 px-3">
+                                <Avatar className="h-7 w-7 ring-2 ring-white/50">
+                                  {entry.winner?.avatar_url ? (
+                                    <AvatarImage src={entry.winner.avatar_url} />
+                                  ) : null}
+                                  <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--warning))] to-[hsl(var(--warning))]/70 text-[hsl(var(--warning-foreground))] text-xs font-bold">
+                                    {getInitials(entry.winner?.display_name)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-sm font-semibold text-foreground">{entry.winner?.display_name || 'Unknown'}</span>
+                              </div>
+                            </div>
+                          </div>
                         ))}
                       </CollapsibleContent>
                     </Collapsible>
