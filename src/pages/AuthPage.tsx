@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import logo from '@/assets/logo.png';
@@ -14,10 +15,20 @@ export default function AuthPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Load remembered email on mount
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem('rememberedEmail');
+    if (rememberedEmail) {
+      setEmail(rememberedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -38,6 +49,13 @@ export default function AuthPage() {
         variant: 'destructive',
       });
     } else {
+      // Handle remember me
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', email);
+      } else {
+        localStorage.removeItem('rememberedEmail');
+      }
+      
       toast({
         title: 'Welcome back!',
         description: 'Successfully signed in.',
@@ -75,6 +93,13 @@ export default function AuthPage() {
         variant: 'destructive',
       });
     } else {
+      // Handle remember me
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', email);
+      } else {
+        localStorage.removeItem('rememberedEmail');
+      }
+      
       toast({
         title: 'Welcome to Driftaculars!',
         description: 'Your account has been created.',
@@ -132,6 +157,16 @@ export default function AuthPage() {
                     required
                   />
                 </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="remember-signin" 
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked === true)}
+                  />
+                  <Label htmlFor="remember-signin" className="text-sm text-muted-foreground cursor-pointer">
+                    Remember me
+                  </Label>
+                </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   Sign In
@@ -174,6 +209,16 @@ export default function AuthPage() {
                     required
                     minLength={6}
                   />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="remember-signup" 
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked === true)}
+                  />
+                  <Label htmlFor="remember-signup" className="text-sm text-muted-foreground cursor-pointer">
+                    Remember me
+                  </Label>
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}

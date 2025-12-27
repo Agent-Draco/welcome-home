@@ -14,10 +14,10 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 export default function MessagesPage() {
-  const { partnerId } = useParams();
+  const { recipientId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { messages, conversations, loading, sendMessage } = usePrivateMessages(partnerId);
+  const { messages, conversations, loading, sendMessage } = usePrivateMessages(recipientId);
   const { profiles } = useProfiles();
   const [newMessage, setNewMessage] = useState('');
 
@@ -27,8 +27,8 @@ export default function MessagesPage() {
   };
 
   const handleSend = async () => {
-    if (!newMessage.trim() || !partnerId) return;
-    await sendMessage(partnerId, newMessage);
+    if (!newMessage.trim() || !recipientId) return;
+    await sendMessage(recipientId, newMessage);
     setNewMessage('');
   };
 
@@ -41,8 +41,8 @@ export default function MessagesPage() {
   }
 
   // Show conversation view
-  if (partnerId) {
-    const partner = profiles.find(p => p.id === partnerId);
+  if (recipientId) {
+    const partner = profiles.find(p => p.id === recipientId);
     return (
       <div className="flex h-screen flex-col">
         <PageHeader
