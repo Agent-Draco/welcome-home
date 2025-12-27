@@ -1,7 +1,8 @@
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
-import { File, Download } from "lucide-react";
+import { File, Download, Pin } from "lucide-react";
+import { PinMessageButton } from "./PinMessageButton";
 
 interface ChatMessageProps {
   message: {
@@ -16,7 +17,9 @@ interface ChatMessageProps {
     };
     timestamp: Date;
     isOwn?: boolean;
+    isPinned?: boolean;
   };
+  onPinChange?: () => void;
 }
 
 // Parse message content for attachments
@@ -44,15 +47,16 @@ function parseContent(content: string) {
   return { text, images, files };
 }
 
-export function ChatMessage({ message }: ChatMessageProps) {
+export function ChatMessage({ message, onPinChange }: ChatMessageProps) {
   const isOwn = message.isOwn;
   const { text, images, files } = parseContent(message.content);
 
   return (
     <div
       className={cn(
-        "flex gap-3 animate-slide-up",
-        isOwn ? "flex-row-reverse" : "flex-row"
+        "group flex gap-3 animate-slide-up relative",
+        isOwn ? "flex-row-reverse" : "flex-row",
+        message.isPinned && "bg-primary/5 -mx-4 px-4 py-2 rounded-lg border-l-2 border-primary"
       )}
     >
       <Avatar className="h-9 w-9 shrink-0 shadow-sm">
@@ -66,12 +70,20 @@ export function ChatMessage({ message }: ChatMessageProps) {
 
       <div className={cn("flex max-w-[70%] flex-col gap-1", isOwn && "items-end")}>
         <div className="flex items-center gap-2">
+          {message.isPinned && (
+            <Pin className="h-3 w-3 text-primary" />
+          )}
           <span className="text-sm font-medium text-foreground">
             {message.sender.name}
           </span>
           <span className="text-xs text-muted-foreground">
             {format(message.timestamp, "h:mm a")}
           </span>
+          <PinMessageButton 
+            messageId={message.id} 
+            isPinned={!!message.isPinned}
+            onPinChange={onPinChange}
+          />
         </div>
         
         {/* Images */}

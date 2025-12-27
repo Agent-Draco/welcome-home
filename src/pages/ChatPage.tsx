@@ -10,7 +10,7 @@ import { useProfiles } from "@/hooks/useProfiles";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function ChatPage() {
-  const { messages, loading, sendMessage } = useRealtimeChat();
+  const { messages, loading, sendMessage, refreshMessages } = useRealtimeChat();
   const { onlineProfiles } = useProfiles();
   const { user } = useAuth();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -95,7 +95,9 @@ export default function ChatPage() {
                   },
                   timestamp: new Date(message.created_at),
                   isOwn: message.sender_id === user?.id,
+                  isPinned: !!message.pinned_at,
                 }}
+                onPinChange={refreshMessages}
               />
             ))
           )}

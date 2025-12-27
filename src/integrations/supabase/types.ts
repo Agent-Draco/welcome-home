@@ -137,21 +137,34 @@ export type Database = {
           content: string
           created_at: string | null
           id: string
+          pinned_at: string | null
+          pinned_by: string | null
           sender_id: string
         }
         Insert: {
           content: string
           created_at?: string | null
           id?: string
+          pinned_at?: string | null
+          pinned_by?: string | null
           sender_id: string
         }
         Update: {
           content?: string
           created_at?: string | null
           id?: string
+          pinned_at?: string | null
+          pinned_by?: string | null
           sender_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "messages_pinned_by_fkey"
+            columns: ["pinned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "messages_sender_id_fkey"
             columns: ["sender_id"]
@@ -237,36 +250,50 @@ export type Database = {
       }
       profiles: {
         Row: {
+          active_theme_id: string | null
           avatar_url: string | null
           bio: string | null
           created_at: string | null
           display_name: string | null
           id: string
           status: string | null
+          theme_preset: string | null
           updated_at: string | null
           username: string | null
         }
         Insert: {
+          active_theme_id?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
           display_name?: string | null
           id: string
           status?: string | null
+          theme_preset?: string | null
           updated_at?: string | null
           username?: string | null
         }
         Update: {
+          active_theme_id?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
           display_name?: string | null
           id?: string
           status?: string | null
+          theme_preset?: string | null
           updated_at?: string | null
           username?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_active_theme_id_fkey"
+            columns: ["active_theme_id"]
+            isOneToOne: false
+            referencedRelation: "user_themes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rsvps: {
         Row: {
@@ -416,6 +443,59 @@ export type Database = {
           {
             foreignKeyName: "traditions_created_by_fkey"
             columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_themes: {
+        Row: {
+          accent_color: string
+          background_color: string
+          created_at: string | null
+          font_family: string
+          foreground_color: string
+          id: string
+          is_dark: boolean
+          name: string
+          primary_color: string
+          secondary_color: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          accent_color: string
+          background_color: string
+          created_at?: string | null
+          font_family?: string
+          foreground_color: string
+          id?: string
+          is_dark?: boolean
+          name: string
+          primary_color: string
+          secondary_color: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          accent_color?: string
+          background_color?: string
+          created_at?: string | null
+          font_family?: string
+          foreground_color?: string
+          id?: string
+          is_dark?: boolean
+          name?: string
+          primary_color?: string
+          secondary_color?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_themes_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

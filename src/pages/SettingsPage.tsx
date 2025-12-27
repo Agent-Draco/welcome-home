@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Settings, Save, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AvatarUpload } from "@/components/settings/AvatarUpload";
+import { ThemeSettings } from "@/components/settings/ThemeSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -140,6 +141,8 @@ export default function SettingsPage() {
               </Button>
             </CardContent>
           </Card>
+
+          <ThemeSettings />
 
           <Card>
             <CardHeader>

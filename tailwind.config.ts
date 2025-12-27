@@ -87,6 +87,7 @@ export default {
   		},
 		fontFamily: {
 			sans: [
+				'var(--font-sans)',
 				'Plus Jakarta Sans',
 				'ui-sans-serif',
 				'system-ui',
@@ -97,11 +98,16 @@ export default {
 				'sans-serif'
 			],
 			mono: [
+				'JetBrains Mono',
 				'Space Mono',
 				'ui-monospace',
 				'SFMono-Regular',
 				'monospace'
-			]
+			],
+			poppins: ['Poppins', 'sans-serif'],
+			nunito: ['Nunito', 'sans-serif'],
+			space: ['Space Grotesk', 'sans-serif'],
+			playfair: ['Playfair Display', 'serif'],
 		},
 		boxShadow: {
 			sm: 'var(--shadow-sm)',
