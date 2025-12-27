@@ -2,11 +2,13 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
-interface Message {
+export interface Message {
   id: string;
   content: string;
   sender_id: string;
   created_at: string;
+  pinned_at?: string | null;
+  pinned_by?: string | null;
   profiles?: {
     id: string;
     username: string | null;
@@ -29,8 +31,13 @@ export function useRealtimeChat() {
       const { data, error } = await supabase
         .from('messages')
         .select(`
-          *,
-          profiles:sender_id (
+          id,
+          content,
+          sender_id,
+          created_at,
+          pinned_at,
+          pinned_by,
+          profiles:profiles!messages_sender_id_fkey (
             id,
             username,
             display_name,
@@ -41,7 +48,7 @@ export function useRealtimeChat() {
         .limit(100);
 
       if (!error && data) {
-        setMessages(data as Message[]);
+        setMessages(data as unknown as Message[]);
       }
       setLoading(false);
     };
@@ -127,5 +134,30 @@ export function useRealtimeChat() {
     return { error };
   };
 
-  return { messages, loading, sendMessage, deleteMessage };
+  const refreshMessages = async () => {
+    const { data } = await supabase
+      .from('messages')
+      .select(`
+        id,
+        content,
+        sender_id,
+        created_at,
+        pinned_at,
+        pinned_by,
+        profiles:profiles!messages_sender_id_fkey (
+          id,
+          username,
+          display_name,
+          avatar_url
+        )
+      `)
+      .order('created_at', { ascending: true })
+      .limit(100);
+
+    if (data) {
+      setMessages(data as unknown as Message[]);
+    }
+  };
+
+  return { messages, loading, sendMessage, deleteMessage, refreshMessages };
 }
