@@ -10,6 +10,8 @@ import { Settings, Save, Loader2, Key, Trash2, AlertTriangle } from "lucide-reac
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AvatarUpload } from "@/components/settings/AvatarUpload";
 import { ThemeSettings } from "@/components/settings/ThemeSettings";
+import { TwoFactorSettings } from "@/components/settings/TwoFactorSettings";
+import { ChangeEmailSettings } from "@/components/settings/ChangeEmailSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -226,7 +228,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <ThemeSettings />
+          <TwoFactorSettings />
 
           <Card>
             <CardHeader>
@@ -234,12 +236,7 @@ export default function SettingsPage() {
               <CardDescription>Manage your account settings</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between rounded-lg border p-4">
-                <div>
-                  <p className="font-medium">Email</p>
-                  <p className="text-sm text-muted-foreground">{user?.email}</p>
-                </div>
-              </div>
+              <ChangeEmailSettings />
               
               <div className="flex items-center justify-between rounded-lg border p-4">
                 <div>

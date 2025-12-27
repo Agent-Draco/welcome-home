@@ -8,11 +8,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowLeft, Mail } from 'lucide-react';
+import { Loader2, ArrowLeft, Mail, Phone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons';
+import { PhoneAuthForm } from '@/components/auth/PhoneAuthForm';
 import logo from '@/assets/logo.png';
 
-type AuthView = 'main' | 'forgot-password' | 'check-email';
+type AuthView = 'main' | 'forgot-password' | 'check-email' | 'phone-auth';
 
 export default function AuthPage() {
   const [email, setEmail] = useState('');
@@ -253,6 +255,30 @@ export default function AuthPage() {
     );
   }
 
+  if (view === 'phone-auth') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/10 via-secondary/5 to-background p-4">
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-primary/20 blur-3xl" />
+          <div className="absolute -right-20 top-20 h-48 w-48 rounded-full bg-secondary/20 blur-3xl" />
+        </div>
+        
+        <Card className="relative w-full max-w-md border-border/50 shadow-xl">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center">
+              <img src={logo} alt="Driftaculars" className="h-20 w-20 rounded-full object-cover shadow-lg" />
+            </div>
+            <CardTitle className="text-2xl font-bold">Phone Sign In</CardTitle>
+            <CardDescription>Sign in or sign up with your phone number</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PhoneAuthForm onBack={() => setView('main')} />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/10 via-secondary/5 to-background p-4">
       <div className="absolute inset-0 opacity-30">
@@ -324,6 +350,18 @@ export default function AuthPage() {
                   {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   Sign In
                 </Button>
+                
+                <SocialAuthButtons />
+                
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setView('phone-auth')}
+                >
+                  <Phone className="mr-2 h-4 w-4" />
+                  Sign in with Phone
+                </Button>
               </form>
             </TabsContent>
             
@@ -376,6 +414,18 @@ export default function AuthPage() {
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   Create Account
+                </Button>
+                
+                <SocialAuthButtons />
+                
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setView('phone-auth')}
+                >
+                  <Phone className="mr-2 h-4 w-4" />
+                  Sign up with Phone
                 </Button>
               </form>
             </TabsContent>
