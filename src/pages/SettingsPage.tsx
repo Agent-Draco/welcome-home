@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -155,23 +154,38 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex h-screen items-center justify-center glass-bg">
+        <div className="glass-card rounded-3xl p-8">
+          <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--tertiary))]" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen flex-col">
-      <PageHeader
-        title="Settings"
-        subtitle="Manage your profile"
-        icon={<Settings className="h-6 w-6" />}
-      />
+    <div className="flex h-screen flex-col glass-bg relative overflow-hidden">
+      {/* Decorative blurred shapes */}
+      <div className="absolute top-20 left-20 w-96 h-96 bg-[hsl(var(--tertiary))] opacity-20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-20 right-20 w-80 h-80 bg-[hsl(var(--primary))] opacity-10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white opacity-20 rounded-full blur-3xl pointer-events-none" />
+      
+      <div className="relative z-10 p-6">
+        <div className="glass-card rounded-3xl px-6 py-4">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--primary))]/80 text-[hsl(var(--primary-foreground))] shadow-lg">
+              <Settings className="h-6 w-6" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-foreground">Settings</h1>
+              <p className="text-sm text-muted-foreground">Manage your profile</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <ScrollArea className="flex-1 p-6">
+      <ScrollArea className="flex-1 px-6 pb-6 relative z-10">
         <div className="mx-auto max-w-2xl space-y-6">
-          <Card>
+          <Card className="glass-card border-white/40">
             <CardHeader>
               <CardTitle>Profile Picture</CardTitle>
             </CardHeader>
@@ -184,7 +198,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="glass-card border-white/40">
             <CardHeader>
               <CardTitle>Profile Information</CardTitle>
             </CardHeader>
@@ -196,6 +210,7 @@ export default function SettingsPage() {
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="Your display name"
+                  className="glass border-white/40"
                 />
               </div>
               <div className="space-y-2">
@@ -205,6 +220,7 @@ export default function SettingsPage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="your_username"
+                  className="glass border-white/40"
                 />
               </div>
               <div className="space-y-2">
@@ -215,9 +231,10 @@ export default function SettingsPage() {
                   onChange={(e) => setBio(e.target.value)}
                   placeholder="Tell us about yourself..."
                   rows={3}
+                  className="glass border-white/40"
                 />
               </div>
-              <Button onClick={handleSave} disabled={saving} className="w-full">
+              <Button onClick={handleSave} disabled={saving} className="w-full rounded-full">
                 {saving ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
@@ -228,9 +245,11 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
+          <ThemeSettings />
+
           <TwoFactorSettings />
 
-          <Card>
+          <Card className="glass-card border-white/40">
             <CardHeader>
               <CardTitle>Account</CardTitle>
               <CardDescription>Manage your account settings</CardDescription>
@@ -238,7 +257,7 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               <ChangeEmailSettings />
               
-              <div className="flex items-center justify-between rounded-lg border p-4">
+              <div className="flex items-center justify-between rounded-lg border border-white/40 bg-white/10 p-4">
                 <div>
                   <p className="font-medium">Password</p>
                   <p className="text-sm text-muted-foreground">Reset your password via email</p>
@@ -247,6 +266,7 @@ export default function SettingsPage() {
                   variant="outline" 
                   onClick={handlePasswordReset}
                   disabled={resettingPassword}
+                  className="rounded-full glass border-white/40"
                 >
                   {resettingPassword ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -259,7 +279,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-destructive/50">
+          <Card className="glass-card border-destructive/50">
             <CardHeader>
               <CardTitle className="text-destructive">Danger Zone</CardTitle>
               <CardDescription>
@@ -276,12 +296,12 @@ export default function SettingsPage() {
                 </div>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive">
+                    <Button variant="destructive" className="rounded-full">
                       <Trash2 className="mr-2 h-4 w-4" />
                       Delete Account
                     </Button>
                   </AlertDialogTrigger>
-                  <AlertDialogContent>
+                  <AlertDialogContent className="glass-card border-white/40">
                     <AlertDialogHeader>
                       <AlertDialogTitle className="flex items-center gap-2">
                         <AlertTriangle className="h-5 w-5 text-destructive" />
@@ -301,6 +321,7 @@ export default function SettingsPage() {
                             value={deleteConfirmation}
                             onChange={(e) => setDeleteConfirmation(e.target.value)}
                             placeholder="DELETE"
+                            className="glass border-white/40"
                           />
                         </div>
                       </AlertDialogDescription>

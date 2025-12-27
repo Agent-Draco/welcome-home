@@ -8,12 +8,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowLeft, Mail } from 'lucide-react';
+import { Loader2, ArrowLeft, Mail, Link } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons';
 import logo from '@/assets/logo.png';
 
-type AuthView = 'main' | 'forgot-password' | 'check-email';
+type AuthView = 'main' | 'forgot-password' | 'check-email' | 'magic-link';
 
 export default function AuthPage() {
   const [email, setEmail] = useState('');
@@ -23,6 +23,7 @@ export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [view, setView] = useState<AuthView>('main');
   const [emailSentTo, setEmailSentTo] = useState('');
+  const [emailType, setEmailType] = useState<'verification' | 'magic-link' | 'password-reset'>('verification');
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -146,27 +147,85 @@ export default function AuthPage() {
     setIsLoading(false);
   };
 
+  const handleMagicLinkSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email.trim()) {
+      toast({
+        title: 'Email required',
+        description: 'Please enter your email address.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/`,
+      },
+    });
+    
+    if (error) {
+      toast({
+        title: 'Failed to send magic link',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } else {
+      setEmailSentTo(email);
+      setEmailType('magic-link');
+      setView('check-email');
+    }
+    
+    setIsLoading(false);
+  };
+
   const handleResendVerification = async () => {
     if (!emailSentTo) return;
     
     setIsLoading(true);
     
-    const { error } = await supabase.auth.resend({
-      type: 'signup',
-      email: emailSentTo,
-    });
-    
-    if (error) {
-      toast({
-        title: 'Failed to resend',
-        description: error.message,
-        variant: 'destructive',
+    if (emailType === 'magic-link') {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: emailSentTo,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+        },
       });
+      
+      if (error) {
+        toast({
+          title: 'Failed to resend',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Magic link sent!',
+          description: 'Check your inbox for the sign-in link.',
+        });
+      }
     } else {
-      toast({
-        title: 'Email sent!',
-        description: 'Check your inbox for the verification link.',
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: emailSentTo,
       });
+      
+      if (error) {
+        toast({
+          title: 'Failed to resend',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Email sent!',
+          description: 'Check your inbox for the verification link.',
+        });
+      }
     }
     
     setIsLoading(false);
@@ -187,12 +246,12 @@ export default function AuthPage() {
             </div>
             <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
             <CardDescription>
-              We've sent a verification link to <strong>{emailSentTo}</strong>
+              We've sent a {emailType === 'magic-link' ? 'magic link' : 'verification link'} to <strong>{emailSentTo}</strong>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-center text-sm text-muted-foreground">
-              Click the link in your email to verify your account and continue.
+              Click the link in your email to {emailType === 'magic-link' ? 'sign in' : 'verify your account'} and continue.
             </p>
             <div className="flex flex-col gap-2">
               <Button variant="outline" onClick={handleResendVerification} disabled={isLoading}>
@@ -254,6 +313,49 @@ export default function AuthPage() {
     );
   }
 
+  if (view === 'magic-link') {
+    return (
+      <div className="flex min-h-screen items-center justify-center glass-bg relative overflow-hidden p-4">
+        <div className="absolute top-20 left-20 w-96 h-96 bg-[hsl(var(--tertiary))] opacity-20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-20 right-20 w-80 h-80 bg-[hsl(var(--primary))] opacity-10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white opacity-20 rounded-full blur-3xl pointer-events-none" />
+        
+        <Card className="glass-card relative w-full max-w-md border-white/40 shadow-xl">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center">
+              <img src={logo} alt="Driftaculars" className="h-20 w-20 rounded-full object-cover shadow-lg" />
+            </div>
+            <CardTitle className="text-2xl font-bold">Magic Link Sign In</CardTitle>
+            <CardDescription>We'll send you a link to sign in instantly</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleMagicLinkSignIn} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="magic-email">Email</Label>
+                <Input
+                  id="magic-email"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="glass border-white/40"
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full rounded-full" disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Link className="mr-2 h-4 w-4" />}
+                Send Magic Link
+              </Button>
+              <Button type="button" variant="ghost" className="w-full" onClick={() => setView('main')}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to sign in
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/10 via-secondary/5 to-background p-4">
@@ -325,6 +427,25 @@ export default function AuthPage() {
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   Sign In
+                </Button>
+                
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                  </div>
+                </div>
+                
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setView('magic-link')}
+                >
+                  <Link className="mr-2 h-4 w-4" />
+                  Sign in with Magic Link
                 </Button>
                 
                 <SocialAuthButtons />
