@@ -22,8 +22,8 @@ export default function ChatPage() {
     }
   }, [messages]);
 
-  const handleSend = async (content: string) => {
-    await sendMessage(content);
+  const handleSend = async (content: string, attachments?: { url: string; type: 'image' | 'file'; name: string }[]) => {
+    await sendMessage(content, attachments);
   };
 
   const getInitials = (name: string | null) => {
