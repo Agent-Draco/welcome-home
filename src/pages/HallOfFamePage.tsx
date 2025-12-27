@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useHallEntries } from "@/hooks/useHallEntries";
 import { useSleepovers } from "@/hooks/useSleepovers";
 import { useProfiles } from "@/hooks/useProfiles";
+import { useAdmin } from "@/hooks/useAdmin";
 import { useToast } from "@/hooks/use-toast";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
@@ -21,6 +22,7 @@ export default function HallOfFamePage() {
   const { entries, entriesByYear, achievements, loading, createAchievement, createEntry } = useHallEntries('fame');
   const { sleepovers } = useSleepovers();
   const { profiles } = useProfiles();
+  const { isAdmin, loading: adminLoading } = useAdmin();
   const { toast } = useToast();
   
   const [expandedYears, setExpandedYears] = useState<Set<number>>(new Set());
@@ -113,7 +115,7 @@ export default function HallOfFamePage() {
 
   const years = Object.keys(entriesByYear).map(Number).sort((a, b) => b - a);
 
-  if (loading) {
+  if (loading || adminLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -128,123 +130,125 @@ export default function HallOfFamePage() {
         subtitle="Celebrating legendary moments"
         icon={<Trophy className="h-6 w-6" />}
         action={
-          <div className="flex gap-2">
-            <Dialog open={isAddAchievementOpen} onOpenChange={setIsAddAchievementOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="rounded-full">
-                  <Plus className="mr-2 h-4 w-4" />
-                  New Achievement
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Create Achievement</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label>Icon</Label>
-                    <Input
-                      value={newAchievementIcon}
-                      onChange={(e) => setNewAchievementIcon(e.target.value)}
-                      placeholder="🏆"
-                      className="w-20 text-center text-2xl"
-                    />
+          isAdmin ? (
+            <div className="flex gap-2">
+              <Dialog open={isAddAchievementOpen} onOpenChange={setIsAddAchievementOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="rounded-full">
+                    <Plus className="mr-2 h-4 w-4" />
+                    New Achievement
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create Achievement</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label>Icon</Label>
+                      <Input
+                        value={newAchievementIcon}
+                        onChange={(e) => setNewAchievementIcon(e.target.value)}
+                        placeholder="🏆"
+                        className="w-20 text-center text-2xl"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Name</Label>
+                      <Input
+                        value={newAchievementName}
+                        onChange={(e) => setNewAchievementName(e.target.value)}
+                        placeholder="Best Pillow Fort Builder"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Description</Label>
+                      <Textarea
+                        value={newAchievementDesc}
+                        onChange={(e) => setNewAchievementDesc(e.target.value)}
+                        placeholder="For the most creative pillow fort construction"
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Name</Label>
-                    <Input
-                      value={newAchievementName}
-                      onChange={(e) => setNewAchievementName(e.target.value)}
-                      placeholder="Best Pillow Fort Builder"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Description</Label>
-                    <Textarea
-                      value={newAchievementDesc}
-                      onChange={(e) => setNewAchievementDesc(e.target.value)}
-                      placeholder="For the most creative pillow fort construction"
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button onClick={handleAddAchievement}>Create</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                  <DialogFooter>
+                    <Button onClick={handleAddAchievement}>Create</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
 
-            <Dialog open={isAddEntryOpen} onOpenChange={setIsAddEntryOpen}>
-              <DialogTrigger asChild>
-                <Button className="rounded-full bg-[hsl(var(--warning))] text-[hsl(var(--warning-foreground))] hover:bg-[hsl(var(--warning))]/90 shadow-glow-secondary">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Entry
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add Hall of Fame Entry</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label>Sleepover</Label>
-                    <Select value={selectedSleepover} onValueChange={setSelectedSleepover}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select sleepover" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {sleepovers.map((s) => (
-                          <SelectItem key={s.id} value={s.id}>
-                            {s.title} ({new Date(s.event_date).toLocaleDateString()})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+              <Dialog open={isAddEntryOpen} onOpenChange={setIsAddEntryOpen}>
+                <DialogTrigger asChild>
+                  <Button className="rounded-full bg-[hsl(var(--warning))] text-[hsl(var(--warning-foreground))] hover:bg-[hsl(var(--warning))]/90 shadow-glow-secondary">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Entry
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add Hall of Fame Entry</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label>Sleepover</Label>
+                      <Select value={selectedSleepover} onValueChange={setSelectedSleepover}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select sleepover" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {sleepovers.map((s) => (
+                            <SelectItem key={s.id} value={s.id}>
+                              {s.title} ({new Date(s.event_date).toLocaleDateString()})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Achievement</Label>
+                      <Select value={selectedAchievement} onValueChange={setSelectedAchievement}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select achievement" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {achievements.map((a) => (
+                            <SelectItem key={a.id} value={a.id}>
+                              {a.icon} {a.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Winner</Label>
+                      <Select value={selectedWinner} onValueChange={setSelectedWinner}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select winner" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {profiles.map((p) => (
+                            <SelectItem key={p.id} value={p.id}>
+                              {p.display_name || p.username}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Description (optional)</Label>
+                      <Textarea
+                        value={entryDescription}
+                        onChange={(e) => setEntryDescription(e.target.value)}
+                        placeholder="What made this legendary?"
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Achievement</Label>
-                    <Select value={selectedAchievement} onValueChange={setSelectedAchievement}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select achievement" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {achievements.map((a) => (
-                          <SelectItem key={a.id} value={a.id}>
-                            {a.icon} {a.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Winner</Label>
-                    <Select value={selectedWinner} onValueChange={setSelectedWinner}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select winner" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {profiles.map((p) => (
-                          <SelectItem key={p.id} value={p.id}>
-                            {p.display_name || p.username}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Description (optional)</Label>
-                    <Textarea
-                      value={entryDescription}
-                      onChange={(e) => setEntryDescription(e.target.value)}
-                      placeholder="What made this legendary?"
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button onClick={handleAddEntry}>Add Entry</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
+                  <DialogFooter>
+                    <Button onClick={handleAddEntry}>Add Entry</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+          ) : null
         }
       />
 
@@ -267,7 +271,9 @@ export default function HallOfFamePage() {
                 No fame entries yet
               </h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Start celebrating legendary moments! Create achievements first, then add entries.
+                {isAdmin 
+                  ? "Start celebrating legendary moments! Create achievements first, then add entries."
+                  : "No legendary moments have been recorded yet."}
               </p>
             </div>
           ) : (

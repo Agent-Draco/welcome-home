@@ -1,16 +1,42 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { MessageCircle, Calendar, Users, Moon, Trophy, Sparkles, ArrowRight } from "lucide-react";
-import { mockMembers, mockEvents, mockMessages } from "@/data/mockData";
+import { MessageCircle, Calendar, Users, Moon, Trophy, Sparkles, ArrowRight, Loader2 } from "lucide-react";
 import { differenceInDays, isFuture } from "date-fns";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useSleepovers } from "@/hooks/useSleepovers";
+import { useProfiles } from "@/hooks/useProfiles";
+import { useRealtimeChat } from "@/hooks/useRealtimeChat";
+
 const Index = () => {
-  const nextSleepover = mockEvents.filter(e => e.type === "sleepover" && isFuture(e.date)).sort((a, b) => a.date.getTime() - b.date.getTime())[0];
-  const daysUntil = nextSleepover ? differenceInDays(nextSleepover.date, new Date()) : null;
-  const onlineMembers = mockMembers.filter(m => m.status === "online");
-  return <AppLayout>
+  const { sleepovers, loading: sleepoverLoading } = useSleepovers();
+  const { profiles, loading: profilesLoading } = useProfiles();
+  const { messages } = useRealtimeChat();
+
+  const upcomingSleepovers = sleepovers.filter(s => isFuture(new Date(s.event_date)));
+  const nextSleepover = upcomingSleepovers.sort((a, b) => 
+    new Date(a.event_date).getTime() - new Date(b.event_date).getTime()
+  )[0];
+  const daysUntil = nextSleepover ? differenceInDays(new Date(nextSleepover.event_date), new Date()) : null;
+  const onlineMembers = profiles.filter(m => m.status === "online");
+
+  const getInitials = (name: string | null) => {
+    if (!name) return '?';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  if (sleepoverLoading || profilesLoading) {
+    return (
+      <AppLayout>
+        <div className="flex h-screen items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </AppLayout>
+    );
+  }
+
+  return (
+    <AppLayout>
       <div className="flex h-screen flex-col overflow-auto">
         {/* Hero Section */}
         <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-secondary/5 to-background px-8 py-12">
@@ -37,7 +63,8 @@ const Index = () => {
             {/* Quick Stats */}
             <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {/* Sleepover Countdown */}
-              {nextSleepover && daysUntil !== null && <Card className="border-primary/20 bg-primary/5 shadow-sm">
+              {nextSleepover && daysUntil !== null && (
+                <Card className="border-primary/20 bg-primary/5 shadow-sm">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary shadow-sm">
@@ -51,7 +78,8 @@ const Index = () => {
                       </div>
                     </div>
                   </CardContent>
-                </Card>}
+                </Card>
+              )}
 
               {/* Online Members */}
               <Card className="border-[hsl(var(--tertiary))]/20 bg-[hsl(var(--tertiary))]/5 shadow-sm">
@@ -80,7 +108,7 @@ const Index = () => {
                     <div>
                       <p className="text-sm text-muted-foreground">Recent Messages</p>
                       <p className="text-2xl font-bold text-secondary">
-                        {mockMessages.length}
+                        {messages.length}
                       </p>
                     </div>
                   </div>
@@ -97,7 +125,7 @@ const Index = () => {
                     <div>
                       <p className="text-sm text-muted-foreground">Upcoming Events</p>
                       <p className="text-2xl font-bold text-[hsl(var(--warning))]">
-                        {mockEvents.length}
+                        {upcomingSleepovers.length}
                       </p>
                     </div>
                   </div>
@@ -224,23 +252,32 @@ const Index = () => {
             {/* Online Members */}
             <div className="mt-8">
               <h2 className="mb-4 text-xl font-semibold text-foreground">Who's Online</h2>
-              <div className="flex flex-wrap gap-3">
-                {onlineMembers.map(member => <div key={member.id} className="flex items-center gap-2 rounded-full bg-card border border-border px-4 py-2 shadow-sm">
-                    <Avatar className="h-6 w-6">
-                      <AvatarFallback className={`text-xs font-semibold ${member.color}`}>
-                        {member.initials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm font-medium text-card-foreground">
-                      {member.name}
-                    </span>
-                    <span className="h-2 w-2 rounded-full bg-[hsl(var(--success))]" />
-                  </div>)}
-              </div>
+              {onlineMembers.length === 0 ? (
+                <p className="text-muted-foreground">No one is online right now</p>
+              ) : (
+                <div className="flex flex-wrap gap-3">
+                  {onlineMembers.map(member => (
+                    <div key={member.id} className="flex items-center gap-2 rounded-full bg-card border border-border px-4 py-2 shadow-sm">
+                      <Avatar className="h-6 w-6">
+                        {member.avatar_url && <AvatarImage src={member.avatar_url} />}
+                        <AvatarFallback className="text-xs font-semibold bg-primary text-primary-foreground">
+                          {getInitials(member.display_name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm font-medium text-card-foreground">
+                        {member.display_name || member.username || 'User'}
+                      </span>
+                      <span className="h-2 w-2 rounded-full bg-[hsl(var(--success))]" />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
-    </AppLayout>;
+    </AppLayout>
+  );
 };
+
 export default Index;
