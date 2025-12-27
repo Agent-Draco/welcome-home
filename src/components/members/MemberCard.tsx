@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle } from "lucide-react";
@@ -13,6 +13,7 @@ interface MemberCardProps {
     status: "online" | "offline" | "away";
     bio?: string;
     joinedDate: string;
+    avatar_url?: string;
   };
   onMessage?: () => void;
 }
@@ -30,6 +31,9 @@ export function MemberCard({ member, onMessage }: MemberCardProps) {
         <div className="flex items-start gap-4">
           <div className="relative">
             <Avatar className="h-14 w-14 shadow-sm">
+              {member.avatar_url && (
+                <AvatarImage src={member.avatar_url} alt={member.name} />
+              )}
               <AvatarFallback className={`text-lg font-bold ${member.color}`}>
                 {member.initials}
               </AvatarFallback>
