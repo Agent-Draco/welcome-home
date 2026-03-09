@@ -1,7 +1,9 @@
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
-import { File, Download, Pin } from "lucide-react";
+import { File, Download, Pin, Trash2 } from "lucide-react";
+import { PinMessageButton } from "./PinMessageButton";
+import { Button } from "@/components/ui/button";
 import { PinMessageButton } from "./PinMessageButton";
 
 interface ChatMessageProps {
