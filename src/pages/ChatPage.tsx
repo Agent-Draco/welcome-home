@@ -7,11 +7,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRealtimeChat } from "@/hooks/useRealtimeChat";
 import { useProfiles } from "@/hooks/useProfiles";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdmin } from "@/hooks/useAdmin";
 
 export default function ChatPage() {
-  const { messages, loading, sendMessage, refreshMessages } = useRealtimeChat();
+  const { messages, loading, sendMessage, deleteMessage, refreshMessages } = useRealtimeChat();
   const { onlineProfiles } = useProfiles();
   const { user } = useAuth();
+  const { isAdmin } = useAdmin();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -41,7 +43,6 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-screen flex-col glass-bg relative overflow-hidden">
-      {/* Decorative blurred shapes */}
       <div className="absolute top-20 left-20 w-96 h-96 bg-[hsl(var(--tertiary))] opacity-20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-20 right-20 w-80 h-80 bg-[hsl(var(--primary))] opacity-10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white opacity-20 rounded-full blur-3xl pointer-events-none" />
@@ -110,6 +111,8 @@ export default function ChatPage() {
                   isOwn: message.sender_id === user?.id,
                   isPinned: !!message.pinned_at,
                 }}
+                canDelete={message.sender_id === user?.id || isAdmin}
+                onDelete={async () => { await deleteMessage(message.id); }}
                 onPinChange={refreshMessages}
               />
             ))
