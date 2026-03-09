@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { MessageCircle, Calendar, Users, Moon, Trophy, Skull, ListChecks, Sparkles, ChevronLeft, ChevronRight, Mic, Settings, LogOut, Mail } from "lucide-react";
+import { MessageCircle, Calendar, Users, Moon, Trophy, Skull, ListChecks, Sparkles, ChevronLeft, ChevronRight, Mic, Settings, LogOut, Mail, Users2, Bot, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,7 +13,10 @@ interface SidebarProps {
 
 const navItems = [
   { icon: MessageCircle, label: "Total Chat", path: "/chat", color: "text-primary" },
+  { icon: Users2, label: "Groups", path: "/groups", color: "text-[hsl(var(--tertiary))]" },
   { icon: Mail, label: "Private Messages", path: "/messages", color: "text-secondary" },
+  { icon: Bot, label: "AI Chat", path: "/ai-chat", color: "text-primary" },
+  { icon: Wrench, label: "AI Tools", path: "/ai-tools", color: "text-[hsl(var(--tertiary))]" },
   { icon: Users, label: "Members", path: "/members", color: "text-[hsl(var(--tertiary))]" },
   { icon: Calendar, label: "Calendar", path: "/calendar", color: "text-secondary" },
   { icon: Moon, label: "Sleepover Logs", path: "/logs", color: "text-primary" },
@@ -43,7 +46,6 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       "fixed left-0 top-0 z-40 h-full border-r border-sidebar-border bg-sidebar transition-all duration-300 ease-out",
       collapsed ? "w-20" : "w-72"
     )}>
-      {/* Logo */}
       <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
         <Link to="/" className="flex items-center gap-3 overflow-hidden">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-glow-primary bg-sky-700 text-red-200">
@@ -55,38 +57,22 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             </span>
           )}
         </Link>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={onToggle} 
-          className="shrink-0 text-sidebar-foreground hover:bg-sidebar-accent"
-        >
+        <Button variant="ghost" size="icon" onClick={onToggle} className="shrink-0 text-sidebar-foreground hover:bg-sidebar-accent">
           {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </Button>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex flex-col gap-1 p-3">
+      <nav className="flex flex-col gap-1 p-3 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 10rem)' }}>
         {navItems.map(item => {
           const isActive = location.pathname === item.path;
           return (
-            <Link 
-              key={item.path} 
-              to={item.path} 
-              className={cn(
-                "group flex items-center gap-3 rounded-xl px-3 py-3 transition-all duration-200",
-                isActive ? "bg-sidebar-accent shadow-sm" : "hover:bg-sidebar-accent/50"
-              )}
-            >
-              <item.icon className={cn(
-                "h-5 w-5 shrink-0 transition-transform group-hover:scale-110",
-                isActive ? item.color : "text-sidebar-foreground"
-              )} />
+            <Link key={item.path} to={item.path} className={cn(
+              "group flex items-center gap-3 rounded-xl px-3 py-3 transition-all duration-200",
+              isActive ? "bg-sidebar-accent shadow-sm" : "hover:bg-sidebar-accent/50"
+            )}>
+              <item.icon className={cn("h-5 w-5 shrink-0 transition-transform group-hover:scale-110", isActive ? item.color : "text-sidebar-foreground")} />
               {!collapsed && (
-                <span className={cn(
-                  "font-medium transition-colors",
-                  isActive ? "text-sidebar-foreground" : "text-muted-foreground"
-                )}>
+                <span className={cn("font-medium transition-colors", isActive ? "text-sidebar-foreground" : "text-muted-foreground")}>
                   {item.label}
                 </span>
               )}
@@ -95,7 +81,6 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         })}
       </nav>
 
-      {/* Bottom section - User */}
       <div className="absolute bottom-0 left-0 right-0 border-t border-sidebar-border p-3">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -108,25 +93,19 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
               </Avatar>
               {!collapsed && (
                 <div className="overflow-hidden text-left">
-                  <p className="truncate text-sm font-medium text-sidebar-foreground">
-                    {profile?.display_name || profile?.username || 'User'}
-                  </p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {user?.email || 'Signed in'}
-                  </p>
+                  <p className="truncate text-sm font-medium text-sidebar-foreground">{profile?.display_name || profile?.username || 'User'}</p>
+                  <p className="truncate text-xs text-muted-foreground">{user?.email || 'Signed in'}</p>
                 </div>
               )}
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuItem onClick={() => navigate('/settings')}>
-              <Settings className="mr-2 h-4 w-4" />
-              Account Settings
+              <Settings className="mr-2 h-4 w-4" /> Account Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
+              <LogOut className="mr-2 h-4 w-4" /> Sign Out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

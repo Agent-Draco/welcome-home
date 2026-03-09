@@ -1,8 +1,9 @@
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
-import { File, Download, Pin } from "lucide-react";
+import { File, Download, Pin, Trash2 } from "lucide-react";
 import { PinMessageButton } from "./PinMessageButton";
+import { Button } from "@/components/ui/button";
 
 interface ChatMessageProps {
   message: {
@@ -19,6 +20,8 @@ interface ChatMessageProps {
     isOwn?: boolean;
     isPinned?: boolean;
   };
+  canDelete?: boolean;
+  onDelete?: () => void;
   onPinChange?: () => void;
 }
 
@@ -47,7 +50,7 @@ function parseContent(content: string) {
   return { text, images, files };
 }
 
-export function ChatMessage({ message, onPinChange }: ChatMessageProps) {
+export function ChatMessage({ message, canDelete, onDelete, onPinChange }: ChatMessageProps) {
   const isOwn = message.isOwn;
   const { text, images, files } = parseContent(message.content);
 
@@ -84,6 +87,16 @@ export function ChatMessage({ message, onPinChange }: ChatMessageProps) {
             isPinned={!!message.isPinned}
             onPinChange={onPinChange}
           />
+          {canDelete && onDelete && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+              onClick={onDelete}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          )}
         </div>
         
         {/* Images */}
