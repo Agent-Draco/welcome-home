@@ -19,6 +19,8 @@ interface ChatMessageProps {
     isOwn?: boolean;
     isPinned?: boolean;
   };
+  canDelete?: boolean;
+  onDelete?: () => void;
   onPinChange?: () => void;
 }
 
