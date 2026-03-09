@@ -51,7 +51,7 @@ function parseContent(content: string) {
   return { text, images, files };
 }
 
-export function ChatMessage({ message, onPinChange }: ChatMessageProps) {
+export function ChatMessage({ message, canDelete, onDelete, onPinChange }: ChatMessageProps) {
   const isOwn = message.isOwn;
   const { text, images, files } = parseContent(message.content);
 
