@@ -3,7 +3,9 @@ import { cn } from "@/lib/utils";
 import { MessageCircle, Calendar, Users, Moon, Trophy, Skull, ListChecks, Sparkles, ChevronLeft, ChevronRight, Mic, Settings, LogOut, Mail, Users2, Bot, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
+import { useUnreadCounts } from "@/hooks/useUnreadCounts";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface SidebarProps {
@@ -12,9 +14,9 @@ interface SidebarProps {
 }
 
 const navItems = [
-  { icon: MessageCircle, label: "Total Chat", path: "/chat", color: "text-primary" },
-  { icon: Users2, label: "Groups", path: "/groups", color: "text-[hsl(var(--tertiary))]" },
-  { icon: Mail, label: "Private Messages", path: "/messages", color: "text-secondary" },
+  { icon: MessageCircle, label: "Total Chat", path: "/chat", color: "text-primary", badgeKey: "totalChat" as const },
+  { icon: Users2, label: "Groups", path: "/groups", color: "text-[hsl(var(--tertiary))]", badgeKey: "groups" as const },
+  { icon: Mail, label: "Private Messages", path: "/messages", color: "text-secondary", badgeKey: "privateMessages" as const },
   { icon: Bot, label: "AI Chat", path: "/ai-chat", color: "text-primary" },
   { icon: Wrench, label: "AI Tools", path: "/ai-tools", color: "text-[hsl(var(--tertiary))]" },
   { icon: Users, label: "Members", path: "/members", color: "text-[hsl(var(--tertiary))]" },
@@ -31,6 +33,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
+  const unreadCounts = useUnreadCounts();
 
   const getInitials = (name: string | null) => {
     if (!name) return '?';
@@ -39,6 +42,13 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
   const handleSignOut = async () => {
     await signOut();
+  };
+
+  const getBadgeCount = (item: typeof navItems[0]) => {
+    if ('badgeKey' in item && item.badgeKey) {
+      return unreadCounts[item.badgeKey] || 0;
+    }
+    return 0;
   };
 
   return (
@@ -65,16 +75,31 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       <nav className="flex flex-col gap-1 p-3 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 10rem)' }}>
         {navItems.map(item => {
           const isActive = location.pathname === item.path;
+          const badgeCount = getBadgeCount(item);
           return (
             <Link key={item.path} to={item.path} className={cn(
-              "group flex items-center gap-3 rounded-xl px-3 py-3 transition-all duration-200",
+              "group flex items-center gap-3 rounded-xl px-3 py-3 transition-all duration-200 relative",
               isActive ? "bg-sidebar-accent shadow-sm" : "hover:bg-sidebar-accent/50"
             )}>
-              <item.icon className={cn("h-5 w-5 shrink-0 transition-transform group-hover:scale-110", isActive ? item.color : "text-sidebar-foreground")} />
+              <div className="relative">
+                <item.icon className={cn("h-5 w-5 shrink-0 transition-transform group-hover:scale-110", isActive ? item.color : "text-sidebar-foreground")} />
+                {badgeCount > 0 && collapsed && (
+                  <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground">
+                    {badgeCount > 9 ? '9+' : badgeCount}
+                  </span>
+                )}
+              </div>
               {!collapsed && (
-                <span className={cn("font-medium transition-colors", isActive ? "text-sidebar-foreground" : "text-muted-foreground")}>
-                  {item.label}
-                </span>
+                <>
+                  <span className={cn("font-medium transition-colors flex-1", isActive ? "text-sidebar-foreground" : "text-muted-foreground")}>
+                    {item.label}
+                  </span>
+                  {badgeCount > 0 && (
+                    <Badge variant="destructive" className="h-5 min-w-[20px] px-1.5 text-[10px]">
+                      {badgeCount}
+                    </Badge>
+                  )}
+                </>
               )}
             </Link>
           );

@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-import { Mail, ArrowLeft, Send, Loader2 } from "lucide-react";
+import { Mail, ArrowLeft, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { usePrivateMessages } from "@/hooks/usePrivateMessages";
 import { useProfiles } from "@/hooks/useProfiles";
 import { useAuth } from "@/hooks/useAuth";
+import { ChatInput } from "@/components/chat/ChatInput";
+import { ChatMessage } from "@/components/chat/ChatMessage";
+import { useAdmin } from "@/hooks/useAdmin";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -16,19 +19,27 @@ export default function MessagesPage() {
   const { recipientId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isAdmin } = useAdmin();
   const { messages, conversations, loading, sendMessage } = usePrivateMessages(recipientId);
   const { profiles } = useProfiles();
-  const [newMessage, setNewMessage] = useState('');
 
   const getInitials = (name: string | null) => {
     if (!name) return '?';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  const handleSend = async () => {
-    if (!newMessage.trim() || !recipientId) return;
-    await sendMessage(recipientId, newMessage);
-    setNewMessage('');
+  const handleSend = async (content: string, attachments?: { url: string; type: 'image' | 'file'; name: string }[]) => {
+    if (!recipientId) return;
+    let messageContent = content.trim();
+    if (attachments?.length) {
+      const attachmentText = attachments.map(a =>
+        a.type === 'image' ? `[image:${a.url}]` : `[file:${a.name}:${a.url}]`
+      ).join(' ');
+      messageContent = messageContent ? `${messageContent} ${attachmentText}` : attachmentText;
+    }
+    if (messageContent) {
+      await sendMessage(recipientId, messageContent);
+    }
   };
 
   if (loading) {
@@ -69,33 +80,34 @@ export default function MessagesPage() {
         </div>
 
         <ScrollArea className="flex-1 px-6 relative z-10">
-          <div className="mx-auto max-w-2xl space-y-4">
-            {messages.map((msg) => {
-              const isOwn = msg.sender_id === user?.id;
-              return (
-                <div key={msg.id} className={cn("flex gap-3", isOwn ? "flex-row-reverse" : "flex-row")}>
-                  <Avatar className="h-8 w-8">
-                    {msg.sender?.avatar_url && <AvatarImage src={msg.sender.avatar_url} />}
-                    <AvatarFallback className="text-xs bg-primary text-primary-foreground">{getInitials(msg.sender?.display_name)}</AvatarFallback>
-                  </Avatar>
-                  <div className={cn("max-w-[70%]", isOwn && "text-right")}>
-                    <div className={cn("rounded-2xl px-4 py-2 shadow-sm", isOwn ? "bg-primary text-primary-foreground" : "glass-card")}>
-                      <p className="text-sm">{msg.content}</p>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">{format(new Date(msg.created_at), "h:mm a")}</p>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="mx-auto max-w-3xl space-y-4">
+            {messages.map((msg) => (
+              <ChatMessage
+                key={msg.id}
+                message={{
+                  id: msg.id,
+                  content: msg.content,
+                  sender: {
+                    id: msg.sender_id,
+                    name: msg.sender?.display_name || msg.sender?.username || 'Unknown',
+                    initials: getInitials(msg.sender?.display_name || msg.sender?.username),
+                    color: 'bg-primary text-primary-foreground',
+                    avatar_url: msg.sender?.avatar_url || undefined,
+                  },
+                  timestamp: new Date(msg.created_at),
+                  isOwn: msg.sender_id === user?.id,
+                  isPinned: false,
+                }}
+                canDelete={msg.sender_id === user?.id || isAdmin}
+                onDelete={async () => {}}
+              />
+            ))}
           </div>
         </ScrollArea>
 
-        <div className="relative z-10 p-6">
-          <div className="mx-auto max-w-2xl glass-card rounded-2xl p-3">
-            <div className="flex gap-2">
-              <Input value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="Type a message..." onKeyDown={(e) => e.key === 'Enter' && handleSend()} className="flex-1 rounded-full border-white/40 bg-white/20" />
-              <Button onClick={handleSend} className="rounded-full shadow-glow-primary"><Send className="h-4 w-4" /></Button>
-            </div>
+        <div className="relative z-10 px-6 pb-6">
+          <div className="mx-auto max-w-3xl">
+            <ChatInput onSend={handleSend} placeholder="Type a message..." />
           </div>
         </div>
       </div>
@@ -106,7 +118,6 @@ export default function MessagesPage() {
     <div className="flex h-screen flex-col glass-bg relative overflow-hidden">
       <div className="absolute top-20 left-20 w-96 h-96 bg-[hsl(var(--tertiary))] opacity-20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-20 right-20 w-80 h-80 bg-[hsl(var(--primary))] opacity-10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white opacity-20 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative z-10 p-6">
         <div className="glass-card rounded-3xl px-6 py-4">
@@ -124,7 +135,30 @@ export default function MessagesPage() {
 
       <ScrollArea className="flex-1 px-6 pb-6 relative z-10">
         <div className="mx-auto max-w-2xl space-y-2">
-          <h3 className="text-sm font-medium text-muted-foreground mb-4">Start a conversation</h3>
+          {conversations.length > 0 && (
+            <>
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">Recent</h3>
+              {conversations.map(conv => (
+                <Card key={conv.partnerId} className="glass-card border-white/40 cursor-pointer hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-300" onClick={() => navigate(`/messages/${conv.partnerId}`)}>
+                  <CardContent className="p-4 flex items-center gap-3">
+                    <Avatar>
+                      <AvatarImage src={conv.partnerAvatar || undefined} />
+                      <AvatarFallback className="bg-primary text-primary-foreground">{getInitials(conv.partnerName)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-foreground">{conv.partnerName}</p>
+                      <p className="text-sm text-muted-foreground truncate">{conv.lastMessage}</p>
+                    </div>
+                    {conv.unreadCount > 0 && (
+                      <Badge className="bg-primary text-primary-foreground">{conv.unreadCount}</Badge>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </>
+          )}
+
+          <h3 className="text-sm font-medium text-muted-foreground mb-4 pt-4">Start a conversation</h3>
           {profiles.filter(p => p.id !== user?.id).map((profile) => (
             <Card key={profile.id} className="glass-card border-white/40 cursor-pointer hover:bg-white/50 dark:hover:bg-white/10 transition-all duration-300" onClick={() => navigate(`/messages/${profile.id}`)}>
               <CardContent className="p-4 flex items-center gap-3">

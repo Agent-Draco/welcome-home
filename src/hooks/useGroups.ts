@@ -68,7 +68,7 @@ export function useGroups() {
     if (user) fetchGroups();
   }, [user]);
 
-  const createGroup = async (name: string, description?: string) => {
+  const createGroup = async (name: string, description?: string, memberIds?: string[]) => {
     if (!user) return { error: new Error('Not authenticated') };
 
     const { data, error } = await supabase
@@ -85,6 +85,16 @@ export function useGroups() {
         role: 'creator',
       });
 
+      // Add selected members
+      if (memberIds && memberIds.length > 0) {
+        const memberInserts = memberIds.map(id => ({
+          group_id: data.id,
+          user_id: id,
+          role: 'member',
+        }));
+        await supabase.from('group_members').insert(memberInserts);
+      }
+
       // Create default #general channel
       await supabase.from('channels').insert({
         group_id: data.id,
@@ -97,6 +107,21 @@ export function useGroups() {
     }
 
     return { data, error };
+  };
+
+  const deleteGroup = async (groupId: string) => {
+    // Delete channels and their messages first
+    const { data: channels } = await supabase.from('channels').select('id').eq('group_id', groupId);
+    if (channels) {
+      for (const ch of channels) {
+        await supabase.from('channel_messages').delete().eq('channel_id', ch.id);
+      }
+      await supabase.from('channels').delete().eq('group_id', groupId);
+    }
+    await supabase.from('group_members').delete().eq('group_id', groupId);
+    const { error } = await supabase.from('groups').delete().eq('id', groupId);
+    if (!error) await fetchGroups();
+    return { error };
   };
 
   const addMember = async (groupId: string, userId: string) => {
@@ -115,7 +140,7 @@ export function useGroups() {
     return { error };
   };
 
-  return { groups, loading, createGroup, addMember, removeMember, fetchGroups };
+  return { groups, loading, createGroup, deleteGroup, addMember, removeMember, fetchGroups };
 }
 
 export function useGroupChannels(groupId: string | null) {

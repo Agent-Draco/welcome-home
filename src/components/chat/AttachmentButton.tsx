@@ -70,7 +70,7 @@ export function AttachmentButton({ onAttachment }: AttachmentButtonProps) {
         ref={fileInputRef}
         onChange={handleFileSelect}
         className="hidden"
-        accept="image/*,.pdf,.doc,.docx,.txt,.zip"
+        accept="*/*"
       />
       <Button
         variant="ghost"
