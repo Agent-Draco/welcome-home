@@ -149,7 +149,7 @@ export default function AiChatPage() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSend()}
-              placeholder={mode === 'shiku' ? 'Ask Shiku-san...' : 'Ask ColdStone...'}
+              placeholder={mode === 'shiku' ? 'Ask Lieutenant Boswell...' : 'Ask ColdStone...'}
               className="flex-1 rounded-full border-white/40 bg-white/20 px-4"
               disabled={isLoading}
             />
