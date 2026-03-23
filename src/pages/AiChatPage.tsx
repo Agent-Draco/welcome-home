@@ -130,7 +130,7 @@ export default function AiChatPage() {
             <div className="flex gap-3">
               <Avatar className="h-9 w-9">
                 <AvatarFallback className="bg-[hsl(var(--tertiary))] text-white text-sm font-bold">
-                  {mode === 'shiku' ? '式' : '🪨'}
+                  {mode === 'shiku' ? 'LB' : '🪨'}
                 </AvatarFallback>
               </Avatar>
               <div className="glass-card rounded-2xl rounded-tl-sm px-4 py-3">
