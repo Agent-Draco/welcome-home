@@ -70,7 +70,7 @@ export default function AiChatPage() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-foreground">
-                  {mode === 'shiku' ? 'Shiku-san' : 'ColdStone'}
+                  {mode === 'shiku' ? 'Lieutenant Boswell' : 'ColdStone'}
                 </h1>
                 <p className="text-sm text-muted-foreground">
                   {mode === 'shiku' ? 'Group-aware AI assistant' : 'General-purpose AI assistant'}
