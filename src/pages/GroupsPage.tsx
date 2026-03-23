@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Users2, Plus, Hash, Send, Settings, UserPlus, Trash2, Loader2 } from "lucide-react";
+import { Users2, Plus, Hash, Settings, UserPlus, Trash2, Loader2, X, Crown } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useGroups, useGroupChannels, useChannelMessages } from "@/hooks/useGroups";
 import { useProfiles } from "@/hooks/useProfiles";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,12 +15,11 @@ import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
 
 export default function GroupsPage() {
   const { user } = useAuth();
   const { isAdmin } = useAdmin();
-  const { groups, loading, createGroup, addMember } = useGroups();
+  const { groups, loading, createGroup, deleteGroup, addMember, removeMember } = useGroups();
   const { profiles } = useProfiles();
   const { toast } = useToast();
 
@@ -29,29 +28,39 @@ export default function GroupsPage() {
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
   const [isCreateChannelOpen, setIsCreateChannelOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupDesc, setNewGroupDesc] = useState('');
   const [newChannelName, setNewChannelName] = useState('');
-  const [selectedMember, setSelectedMember] = useState('');
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
 
-  const { channels, members, createChannel } = useGroupChannels(selectedGroupId);
+  const { channels, members, createChannel, fetchMembers } = useGroupChannels(selectedGroupId);
   const { messages, sendMessage, deleteMessage } = useChannelMessages(selectedChannelId);
+
+  const selectedGroup = groups.find(g => g.id === selectedGroupId);
+  const isCreator = selectedGroup?.created_by === user?.id;
+  const canManage = isCreator || isAdmin;
 
   const getInitials = (name: string | null) => {
     if (!name) return '?';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
+  const toggleMember = (id: string) => {
+    setSelectedMembers(prev => prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]);
+  };
+
   const handleCreateGroup = async () => {
     if (!newGroupName.trim()) return;
-    const { error } = await createGroup(newGroupName, newGroupDesc);
+    const { error } = await createGroup(newGroupName, newGroupDesc, selectedMembers);
     if (error) {
-      toast({ title: 'Failed to create group', variant: 'destructive' });
+      toast({ title: 'Failed to create group', description: error.message, variant: 'destructive' });
     } else {
       toast({ title: 'Group created!' });
       setIsCreateGroupOpen(false);
       setNewGroupName('');
       setNewGroupDesc('');
+      setSelectedMembers([]);
     }
   };
 
@@ -67,15 +76,38 @@ export default function GroupsPage() {
     }
   };
 
-  const handleAddMember = async () => {
-    if (!selectedMember || !selectedGroupId) return;
-    const { error } = await addMember(selectedGroupId, selectedMember);
+  const handleDeleteGroup = async () => {
+    if (!selectedGroupId) return;
+    const { error } = await deleteGroup(selectedGroupId);
+    if (error) {
+      toast({ title: 'Failed to delete group', variant: 'destructive' });
+    } else {
+      toast({ title: 'Group deleted' });
+      setSelectedGroupId(null);
+      setSelectedChannelId(null);
+      setIsSettingsOpen(false);
+    }
+  };
+
+  const handleRemoveMember = async (userId: string) => {
+    if (!selectedGroupId) return;
+    const { error } = await removeMember(selectedGroupId, userId);
+    if (error) {
+      toast({ title: 'Failed to remove member', variant: 'destructive' });
+    } else {
+      toast({ title: 'Member removed' });
+      fetchMembers();
+    }
+  };
+
+  const handleAddMemberFromSettings = async (userId: string) => {
+    if (!selectedGroupId) return;
+    const { error } = await addMember(selectedGroupId, userId);
     if (error) {
       toast({ title: 'Failed to add member', description: error.message, variant: 'destructive' });
     } else {
       toast({ title: 'Member added!' });
-      setIsAddMemberOpen(false);
-      setSelectedMember('');
+      fetchMembers();
     }
   };
 
@@ -94,11 +126,11 @@ export default function GroupsPage() {
   }
 
   const memberIds = members.map(m => m.user_id);
-  const nonMembers = profiles.filter(p => !memberIds.includes(p.id) && p.id !== user?.id);
+  const nonMembers = profiles.filter(p => !memberIds.includes(p.id));
+  const otherUsers = profiles.filter(p => p.id !== user?.id);
 
   return (
     <div className="flex h-screen glass-bg relative overflow-hidden">
-      {/* Decorative blurred shapes */}
       <div className="absolute top-20 left-20 w-96 h-96 bg-[hsl(var(--tertiary))] opacity-20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-20 right-20 w-80 h-80 bg-[hsl(var(--primary))] opacity-10 rounded-full blur-3xl pointer-events-none" />
 
@@ -113,7 +145,7 @@ export default function GroupsPage() {
               <DialogTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8"><Plus className="h-4 w-4" /></Button>
               </DialogTrigger>
-              <DialogContent className="glass-card border-white/40">
+              <DialogContent className="glass-card border-white/40 max-h-[80vh] overflow-y-auto">
                 <DialogHeader><DialogTitle>Create Group</DialogTitle></DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
@@ -123,6 +155,29 @@ export default function GroupsPage() {
                   <div className="space-y-2">
                     <Label>Description</Label>
                     <Input value={newGroupDesc} onChange={e => setNewGroupDesc(e.target.value)} placeholder="What's this group for?" className="glass border-white/40" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Add Members</Label>
+                    <div className="max-h-48 overflow-y-auto space-y-2 rounded-xl border border-white/30 p-3">
+                      {otherUsers.map(p => (
+                        <label key={p.id} className="flex items-center gap-3 cursor-pointer hover:bg-white/20 rounded-lg p-2 transition-colors">
+                          <Checkbox
+                            checked={selectedMembers.includes(p.id)}
+                            onCheckedChange={() => toggleMember(p.id)}
+                          />
+                          <Avatar className="h-7 w-7">
+                            {p.avatar_url && <AvatarImage src={p.avatar_url} />}
+                            <AvatarFallback className="text-[10px] bg-primary text-primary-foreground">
+                              {getInitials(p.display_name || p.username)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-sm text-foreground">{p.display_name || p.username}</span>
+                        </label>
+                      ))}
+                    </div>
+                    {selectedMembers.length > 0 && (
+                      <p className="text-xs text-muted-foreground">{selectedMembers.length} member(s) selected</p>
+                    )}
                   </div>
                 </div>
                 <DialogFooter><Button onClick={handleCreateGroup} className="rounded-full">Create</Button></DialogFooter>
@@ -164,25 +219,68 @@ export default function GroupsPage() {
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-sm text-foreground">Channels</h3>
               <div className="flex gap-1">
-                <Dialog open={isAddMemberOpen} onOpenChange={setIsAddMemberOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-7 w-7"><UserPlus className="h-3.5 w-3.5" /></Button>
-                  </DialogTrigger>
-                  <DialogContent className="glass-card border-white/40">
-                    <DialogHeader><DialogTitle>Add Member</DialogTitle></DialogHeader>
-                    <div className="space-y-4 py-4">
-                      <Select value={selectedMember} onValueChange={setSelectedMember}>
-                        <SelectTrigger className="glass border-white/40"><SelectValue placeholder="Select user" /></SelectTrigger>
-                        <SelectContent>
-                          {nonMembers.map(p => (
-                            <SelectItem key={p.id} value={p.id}>{p.display_name || p.username}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <DialogFooter><Button onClick={handleAddMember} className="rounded-full">Add</Button></DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                {canManage && (
+                  <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-7 w-7"><Settings className="h-3.5 w-3.5" /></Button>
+                    </DialogTrigger>
+                    <DialogContent className="glass-card border-white/40 max-h-[80vh] overflow-y-auto">
+                      <DialogHeader><DialogTitle>Group Settings</DialogTitle></DialogHeader>
+                      <div className="space-y-6 py-4">
+                        {/* Members management */}
+                        <div>
+                          <Label className="text-sm font-semibold">Members ({members.length})</Label>
+                          <div className="mt-2 space-y-2 max-h-48 overflow-y-auto">
+                            {members.map(m => (
+                              <div key={m.id} className="flex items-center justify-between rounded-lg p-2 hover:bg-white/20">
+                                <div className="flex items-center gap-2">
+                                  <Avatar className="h-7 w-7">
+                                    {m.profiles?.avatar_url && <AvatarImage src={m.profiles.avatar_url} />}
+                                    <AvatarFallback className="text-[10px] bg-primary text-primary-foreground">
+                                      {getInitials(m.profiles?.display_name || m.profiles?.username)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="text-sm">{m.profiles?.display_name || m.profiles?.username}</span>
+                                  {m.role === 'creator' && <Crown className="h-3 w-3 text-[hsl(var(--warning))]" />}
+                                </div>
+                                {m.role !== 'creator' && canManage && (
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleRemoveMember(m.user_id)}>
+                                    <X className="h-3.5 w-3.5" />
+                                  </Button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Add members */}
+                        {nonMembers.length > 0 && (
+                          <div>
+                            <Label className="text-sm font-semibold">Add Members</Label>
+                            <div className="mt-2 space-y-1 max-h-36 overflow-y-auto">
+                              {nonMembers.map(p => (
+                                <button key={p.id} onClick={() => handleAddMemberFromSettings(p.id)}
+                                  className="flex w-full items-center gap-2 rounded-lg p-2 hover:bg-white/20 text-left transition-colors">
+                                  <UserPlus className="h-3.5 w-3.5 text-muted-foreground" />
+                                  <span className="text-sm">{p.display_name || p.username}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Delete group */}
+                        {canManage && (
+                          <div className="pt-4 border-t border-white/20">
+                            <Button variant="destructive" className="w-full rounded-full" onClick={handleDeleteGroup}>
+                              <Trash2 className="h-4 w-4 mr-2" /> Delete Group
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
                 <Dialog open={isCreateChannelOpen} onOpenChange={setIsCreateChannelOpen}>
                   <DialogTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-7 w-7"><Plus className="h-3.5 w-3.5" /></Button>
