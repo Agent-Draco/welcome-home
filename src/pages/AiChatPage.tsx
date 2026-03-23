@@ -95,7 +95,7 @@ export default function AiChatPage() {
             <div className="glass-card rounded-3xl p-12 text-center">
               <Bot className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
               <h3 className="text-xl font-bold text-foreground">
-                {mode === 'shiku' ? 'Hey! I\'m Shiku-san 🎌' : 'Hello! I\'m ColdStone 🪨'}
+                {mode === 'shiku' ? 'Hey! I\'m Lieutenant Boswell 🎖️' : 'Hello! I\'m ColdStone 🪨'}
               </h3>
               <p className="mt-2 text-muted-foreground max-w-sm mx-auto">
                 {mode === 'shiku'
