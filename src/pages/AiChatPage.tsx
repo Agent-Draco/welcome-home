@@ -83,7 +83,7 @@ export default function AiChatPage() {
               className="glass rounded-full border-white/40"
             >
               {mode === 'shiku' ? <ToggleLeft className="mr-2 h-4 w-4" /> : <ToggleRight className="mr-2 h-4 w-4" />}
-              Switch to {mode === 'shiku' ? 'ColdStone' : 'Shiku-san'}
+              Switch to {mode === 'shiku' ? 'ColdStone' : 'Lt. Boswell'}
             </Button>
           </div>
         </div>
