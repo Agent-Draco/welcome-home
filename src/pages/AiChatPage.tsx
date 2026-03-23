@@ -111,7 +111,7 @@ export default function AiChatPage() {
                   "text-sm font-bold",
                   msg.role === 'user' ? "bg-primary text-primary-foreground" : "bg-[hsl(var(--tertiary))] text-white"
                 )}>
-                  {msg.role === 'user' ? getInitials(profile?.display_name) : (mode === 'shiku' ? '式' : '🪨')}
+                  {msg.role === 'user' ? getInitials(profile?.display_name) : (mode === 'shiku' ? 'LB' : '🪨')}
                 </AvatarFallback>
               </Avatar>
               <div className={cn("max-w-[75%]", msg.role === 'user' && "text-right")}>
