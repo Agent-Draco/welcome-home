@@ -70,7 +70,7 @@ export default function AiChatPage() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-foreground">
-                  {mode === 'shiku' ? 'Shiku-san' : 'ColdStone'}
+                  {mode === 'shiku' ? 'Lieutenant Boswell' : 'ColdStone'}
                 </h1>
                 <p className="text-sm text-muted-foreground">
                   {mode === 'shiku' ? 'Group-aware AI assistant' : 'General-purpose AI assistant'}
@@ -83,7 +83,7 @@ export default function AiChatPage() {
               className="glass rounded-full border-white/40"
             >
               {mode === 'shiku' ? <ToggleLeft className="mr-2 h-4 w-4" /> : <ToggleRight className="mr-2 h-4 w-4" />}
-              Switch to {mode === 'shiku' ? 'ColdStone' : 'Shiku-san'}
+              Switch to {mode === 'shiku' ? 'ColdStone' : 'Lt. Boswell'}
             </Button>
           </div>
         </div>
@@ -95,7 +95,7 @@ export default function AiChatPage() {
             <div className="glass-card rounded-3xl p-12 text-center">
               <Bot className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
               <h3 className="text-xl font-bold text-foreground">
-                {mode === 'shiku' ? 'Hey! I\'m Shiku-san 🎌' : 'Hello! I\'m ColdStone 🪨'}
+                {mode === 'shiku' ? 'Hey! I\'m Lieutenant Boswell 🎖️' : 'Hello! I\'m ColdStone 🪨'}
               </h3>
               <p className="mt-2 text-muted-foreground max-w-sm mx-auto">
                 {mode === 'shiku'
@@ -111,7 +111,7 @@ export default function AiChatPage() {
                   "text-sm font-bold",
                   msg.role === 'user' ? "bg-primary text-primary-foreground" : "bg-[hsl(var(--tertiary))] text-white"
                 )}>
-                  {msg.role === 'user' ? getInitials(profile?.display_name) : (mode === 'shiku' ? '式' : '🪨')}
+                  {msg.role === 'user' ? getInitials(profile?.display_name) : (mode === 'shiku' ? 'LB' : '🪨')}
                 </AvatarFallback>
               </Avatar>
               <div className={cn("max-w-[75%]", msg.role === 'user' && "text-right")}>
@@ -130,7 +130,7 @@ export default function AiChatPage() {
             <div className="flex gap-3">
               <Avatar className="h-9 w-9">
                 <AvatarFallback className="bg-[hsl(var(--tertiary))] text-white text-sm font-bold">
-                  {mode === 'shiku' ? '式' : '🪨'}
+                  {mode === 'shiku' ? 'LB' : '🪨'}
                 </AvatarFallback>
               </Avatar>
               <div className="glass-card rounded-2xl rounded-tl-sm px-4 py-3">
@@ -149,7 +149,7 @@ export default function AiChatPage() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSend()}
-              placeholder={mode === 'shiku' ? 'Ask Shiku-san...' : 'Ask ColdStone...'}
+              placeholder={mode === 'shiku' ? 'Ask Lieutenant Boswell...' : 'Ask ColdStone...'}
               className="flex-1 rounded-full border-white/40 bg-white/20 px-4"
               disabled={isLoading}
             />
