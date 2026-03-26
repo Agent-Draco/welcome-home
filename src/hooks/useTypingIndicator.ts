@@ -11,7 +11,7 @@ export function useTypingIndicator(channelName: string) {
   const { user } = useAuth();
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!user || !channelName) return;
