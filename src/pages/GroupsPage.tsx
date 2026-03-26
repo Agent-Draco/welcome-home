@@ -380,6 +380,8 @@ export default function GroupsPage() {
                         isOwn: msg.sender_id === user?.id,
                         isPinned: !!msg.pinned_at,
                       }}
+                      reactions={reactions[msg.id] || []}
+                      onToggleReaction={(emoji) => toggleReaction(msg.id, emoji).then(() => fetchReactions(messages.map(m => m.id)))}
                       canDelete={msg.sender_id === user?.id || isAdmin}
                       onDelete={() => deleteMessage(msg.id)}
                     />
@@ -388,7 +390,8 @@ export default function GroupsPage() {
               </div>
             </ScrollArea>
             <div className="max-w-3xl mx-auto w-full px-6 pb-4">
-              <ChatInput onSend={handleSend} placeholder={`Message #${channels.find(c => c.id === selectedChannelId)?.name || 'channel'}...`} />
+              <TypingIndicator typingUsers={typingUsers} />
+              <ChatInput onSend={handleSend} onTyping={() => startTyping(myProfile?.display_name || 'Someone')} placeholder={`Message #${channels.find(c => c.id === selectedChannelId)?.name || 'channel'}...`} />
             </div>
           </>
         ) : selectedGroupId ? (
