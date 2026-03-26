@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Users2, Plus, Hash, Settings, UserPlus, Trash2, Loader2, X, Crown } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatMessage } from "@/components/chat/ChatMessage";
+import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { useToast } from "@/hooks/use-toast";
+import { useReactions } from "@/hooks/useReactions";
+import { useTypingIndicator } from "@/hooks/useTypingIndicator";
 import { cn } from "@/lib/utils";
 
 export default function GroupsPage() {
@@ -36,6 +39,13 @@ export default function GroupsPage() {
 
   const { channels, members, createChannel, fetchMembers } = useGroupChannels(selectedGroupId);
   const { messages, sendMessage, deleteMessage } = useChannelMessages(selectedChannelId);
+  const { reactions, fetchReactions, toggleReaction } = useReactions('channel', selectedChannelId || undefined);
+  const { typingUsers, startTyping, stopTyping } = useTypingIndicator(`channel-${selectedChannelId || 'none'}`);
+  const myProfile = profiles.find(p => p.id === user?.id);
+
+  useEffect(() => {
+    if (messages.length) fetchReactions(messages.map(m => m.id));
+  }, [messages.length, selectedChannelId]);
 
   const selectedGroup = groups.find(g => g.id === selectedGroupId);
   const isCreator = selectedGroup?.created_by === user?.id;
@@ -370,6 +380,8 @@ export default function GroupsPage() {
                         isOwn: msg.sender_id === user?.id,
                         isPinned: !!msg.pinned_at,
                       }}
+                      reactions={reactions[msg.id] || []}
+                      onToggleReaction={(emoji) => toggleReaction(msg.id, emoji).then(() => fetchReactions(messages.map(m => m.id)))}
                       canDelete={msg.sender_id === user?.id || isAdmin}
                       onDelete={() => deleteMessage(msg.id)}
                     />
@@ -378,7 +390,8 @@ export default function GroupsPage() {
               </div>
             </ScrollArea>
             <div className="max-w-3xl mx-auto w-full px-6 pb-4">
-              <ChatInput onSend={handleSend} placeholder={`Message #${channels.find(c => c.id === selectedChannelId)?.name || 'channel'}...`} />
+              <TypingIndicator typingUsers={typingUsers} />
+              <ChatInput onSend={handleSend} onTyping={() => startTyping(myProfile?.display_name || 'Someone')} placeholder={`Message #${channels.find(c => c.id === selectedChannelId)?.name || 'channel'}...`} />
             </div>
           </>
         ) : selectedGroupId ? (

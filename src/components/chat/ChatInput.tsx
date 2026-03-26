@@ -13,10 +13,11 @@ interface Attachment {
 
 interface ChatInputProps {
   onSend: (message: string, attachments?: Attachment[]) => void;
+  onTyping?: () => void;
   placeholder?: string;
 }
 
-export function ChatInput({ onSend, placeholder = "Type a message..." }: ChatInputProps) {
+export function ChatInput({ onSend, onTyping, placeholder = "Type a message..." }: ChatInputProps) {
   const [message, setMessage] = useState("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
 
@@ -67,7 +68,7 @@ export function ChatInput({ onSend, placeholder = "Type a message..." }: ChatInp
         <EmojiPicker onEmojiSelect={handleEmojiSelect} />
         <Input
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={(e) => { setMessage(e.target.value); onTyping?.(); }}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           className="flex-1 rounded-full border-border bg-background px-4 py-2 focus-visible:ring-primary"

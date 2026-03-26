@@ -4,6 +4,8 @@ import { format } from "date-fns";
 import { File, Download, Pin, Trash2 } from "lucide-react";
 import { PinMessageButton } from "./PinMessageButton";
 import { Button } from "@/components/ui/button";
+import { MessageReactions } from "./MessageReactions";
+import type { Reaction } from "@/hooks/useReactions";
 
 interface ChatMessageProps {
   message: {
@@ -20,6 +22,8 @@ interface ChatMessageProps {
     isOwn?: boolean;
     isPinned?: boolean;
   };
+  reactions?: Reaction[];
+  onToggleReaction?: (emoji: string) => void;
   canDelete?: boolean;
   onDelete?: () => void;
   onPinChange?: () => void;
@@ -50,7 +54,7 @@ function parseContent(content: string) {
   return { text, images, files };
 }
 
-export function ChatMessage({ message, canDelete, onDelete, onPinChange }: ChatMessageProps) {
+export function ChatMessage({ message, reactions, onToggleReaction, canDelete, onDelete, onPinChange }: ChatMessageProps) {
   const isOwn = message.isOwn;
   const { text, images, files } = parseContent(message.content);
 
@@ -156,6 +160,9 @@ export function ChatMessage({ message, canDelete, onDelete, onPinChange }: ChatM
           >
             <p className="text-sm leading-relaxed">{text}</p>
           </div>
+        )}
+        {onToggleReaction && (
+          <MessageReactions reactions={reactions || []} onToggle={onToggleReaction} />
         )}
       </div>
     </div>
