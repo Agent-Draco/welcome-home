@@ -39,6 +39,13 @@ export default function GroupsPage() {
 
   const { channels, members, createChannel, fetchMembers } = useGroupChannels(selectedGroupId);
   const { messages, sendMessage, deleteMessage } = useChannelMessages(selectedChannelId);
+  const { reactions, fetchReactions, toggleReaction } = useReactions('channel', selectedChannelId || undefined);
+  const { typingUsers, startTyping, stopTyping } = useTypingIndicator(`channel-${selectedChannelId || 'none'}`);
+  const myProfile = profiles.find(p => p.id === user?.id);
+
+  useEffect(() => {
+    if (messages.length) fetchReactions(messages.map(m => m.id));
+  }, [messages.length, selectedChannelId]);
 
   const selectedGroup = groups.find(g => g.id === selectedGroupId);
   const isCreator = selectedGroup?.created_by === user?.id;
