@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Mail, ArrowLeft, Loader2 } from "lucide-react";
@@ -11,8 +11,11 @@ import { useProfiles } from "@/hooks/useProfiles";
 import { useAuth } from "@/hooks/useAuth";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatMessage } from "@/components/chat/ChatMessage";
+import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { useAdmin } from "@/hooks/useAdmin";
-import { format } from "date-fns";
+import { useReactions } from "@/hooks/useReactions";
+import { useTypingIndicator } from "@/hooks/useTypingIndicator";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 export default function MessagesPage() {
@@ -20,8 +23,15 @@ export default function MessagesPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isAdmin } = useAdmin();
-  const { messages, conversations, loading, sendMessage } = usePrivateMessages(recipientId);
+  const { messages, conversations, loading, sendMessage, fetchMessages } = usePrivateMessages(recipientId);
   const { profiles } = useProfiles();
+  const { reactions, fetchReactions, toggleReaction } = useReactions('private', recipientId);
+  const { typingUsers, startTyping, stopTyping } = useTypingIndicator(`dm-${recipientId || 'none'}`);
+  const myProfile = profiles.find(p => p.id === user?.id);
+
+  useEffect(() => {
+    if (messages.length && recipientId) fetchReactions(messages.map(m => m.id));
+  }, [messages.length, recipientId]);
 
   const getInitials = (name: string | null) => {
     if (!name) return '?';
@@ -39,7 +49,13 @@ export default function MessagesPage() {
     }
     if (messageContent) {
       await sendMessage(recipientId, messageContent);
+      stopTyping();
     }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    await supabase.from('private_messages').delete().eq('id', messageId);
+    fetchMessages();
   };
 
   if (loading) {
@@ -98,8 +114,10 @@ export default function MessagesPage() {
                   isOwn: msg.sender_id === user?.id,
                   isPinned: false,
                 }}
+                reactions={reactions[msg.id] || []}
+                onToggleReaction={(emoji) => toggleReaction(msg.id, emoji).then(() => fetchReactions(messages.map(m => m.id)))}
                 canDelete={msg.sender_id === user?.id || isAdmin}
-                onDelete={async () => {}}
+                onDelete={() => handleDeleteMessage(msg.id)}
               />
             ))}
           </div>
@@ -107,7 +125,8 @@ export default function MessagesPage() {
 
         <div className="relative z-10 px-6 pb-6">
           <div className="mx-auto max-w-3xl">
-            <ChatInput onSend={handleSend} placeholder="Type a message..." />
+            <TypingIndicator typingUsers={typingUsers} />
+            <ChatInput onSend={handleSend} onTyping={() => startTyping(myProfile?.display_name || 'Someone')} placeholder="Type a message..." />
           </div>
         </div>
       </div>
