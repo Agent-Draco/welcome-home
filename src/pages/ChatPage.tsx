@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { ChatInput } from "@/components/chat/ChatInput";
+import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { MessageCircle, Users, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,13 +9,19 @@ import { useRealtimeChat } from "@/hooks/useRealtimeChat";
 import { useProfiles } from "@/hooks/useProfiles";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
+import { useReactions } from "@/hooks/useReactions";
+import { useTypingIndicator } from "@/hooks/useTypingIndicator";
 
 export default function ChatPage() {
   const { messages, loading, sendMessage, deleteMessage, refreshMessages } = useRealtimeChat();
-  const { onlineProfiles } = useProfiles();
+  const { onlineProfiles, profiles } = useProfiles();
   const { user } = useAuth();
   const { isAdmin } = useAdmin();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { reactions, fetchReactions, toggleReaction } = useReactions('chat');
+  const { typingUsers, startTyping, stopTyping } = useTypingIndicator('total-chat');
+
+  const myProfile = profiles.find(p => p.id === user?.id);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -22,8 +29,19 @@ export default function ChatPage() {
     }
   }, [messages]);
 
+  useEffect(() => {
+    if (messages.length) {
+      fetchReactions(messages.map(m => m.id));
+    }
+  }, [messages.length]);
+
   const handleSend = async (content: string, attachments?: { url: string; type: 'image' | 'file'; name: string }[]) => {
     await sendMessage(content, attachments);
+    stopTyping();
+  };
+
+  const handleTyping = () => {
+    startTyping(myProfile?.display_name || myProfile?.username || 'Someone');
   };
 
   const getInitials = (name: string | null) => {
@@ -111,6 +129,8 @@ export default function ChatPage() {
                   isOwn: message.sender_id === user?.id,
                   isPinned: !!message.pinned_at,
                 }}
+                reactions={reactions[message.id] || []}
+                onToggleReaction={(emoji) => toggleReaction(message.id, emoji).then(() => fetchReactions(messages.map(m => m.id)))}
                 canDelete={message.sender_id === user?.id || isAdmin}
                 onDelete={async () => { await deleteMessage(message.id); }}
                 onPinChange={refreshMessages}
@@ -122,7 +142,8 @@ export default function ChatPage() {
       </ScrollArea>
 
       <div className="mx-auto w-full max-w-3xl relative z-10 pb-6 px-6">
-        <ChatInput onSend={handleSend} placeholder="Send a message to everyone..." />
+        <TypingIndicator typingUsers={typingUsers} />
+        <ChatInput onSend={handleSend} onTyping={handleTyping} placeholder="Send a message to everyone..." />
       </div>
     </div>
   );
