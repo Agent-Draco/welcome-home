@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Users2, Plus, Hash, Settings, UserPlus, Trash2, Loader2, X, Crown } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatMessage } from "@/components/chat/ChatMessage";
+import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { useToast } from "@/hooks/use-toast";
+import { useReactions } from "@/hooks/useReactions";
+import { useTypingIndicator } from "@/hooks/useTypingIndicator";
 import { cn } from "@/lib/utils";
 
 export default function GroupsPage() {
