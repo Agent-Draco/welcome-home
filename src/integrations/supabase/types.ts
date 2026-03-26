@@ -811,7 +811,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_channel: {
+        Args: { _channel_id: string; _user_id: string }
+        Returns: boolean
+      }
+      can_manage_group: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_admin_uid: { Args: { _user_id: string }; Returns: boolean }
       is_admin_user: { Args: { user_email: string }; Returns: boolean }
+      is_group_member: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
